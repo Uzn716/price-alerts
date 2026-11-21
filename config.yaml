@@ -1,0 +1,194 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  PC Price Alerts — your settings and watchlist
+#  Edit this file right on GitHub (pencil icon), then "Commit changes".
+#  The next check (within ~10 minutes) uses your new settings.
+# ─────────────────────────────────────────────────────────────────────────────
+
+settings:
+  # How far below its normal price something must be to count as a price error.
+  # Used for parts in your list below (each part can override it).
+  min_drop_percent: 35
+
+  # Stricter bar for PC parts that AREN'T in your list but match
+  # general_keywords (so you still hear about a random 60%-off motherboard).
+  general_min_drop_percent: 50
+
+  # Ignore anything cheaper than this (filters out cables, stickers, etc.).
+  min_price: 25
+
+  # Don't repeat an alert for the same listing for this many hours
+  # (unless the price drops another 5% or more).
+  realert_after_hours: 24
+
+  # Who to ping. Leave "" for no ping. Use "@here", or "<@YOUR_USER_ID>"
+  # to ping just you (README explains how to find your user ID).
+  mention: ""
+
+  general_keywords:
+    - graphics card
+    - geforce
+    - radeon
+    - ryzen
+    - core ultra
+    - motherboard
+    - ddr5
+    - nvme
+    - power supply
+    - cpu cooler
+
+  # Titles containing any of these are skipped (unless you watch the exact ASIN).
+  exclude:
+    - laptop
+    - notebook
+    - chromebook
+    - tablet
+    - renewed
+    - refurbished
+    - open box
+    - pre owned
+    - for parts
+    - water block
+    - waterblock
+    - backplate
+    - gpu bracket
+    - gpu support
+    - riser
+    - replacement fan
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Your watchlist. For each part:
+#    match:        words that must ALL appear in a product title (case doesn't
+#                  matter). Give several lines to allow alternatives.
+#    exclude:      words that rule a title out (e.g. "ti" so a 5070 search
+#                  doesn't catch 5070 Ti cards).
+#    alert_below:  always alert under this price, no matter the "normal" price.
+#                  The numbers below are EXAMPLES set well under launch prices.
+#                  Change them to whatever would make you buy instantly.
+#    amazon:       optional Amazon links/ASINs to watch directly (needs Keepa).
+#    min_drop_percent / min_price: optional per-part overrides.
+# ─────────────────────────────────────────────────────────────────────────────
+parts:
+  # ── Graphics cards ──
+  - name: RTX 5090
+    match: ["rtx 5090"]
+    alert_below: 1199
+    min_price: 600
+  - name: RTX 5080
+    match: ["rtx 5080"]
+    alert_below: 599
+    min_price: 300
+  - name: RTX 5070 Ti
+    match: ["rtx 5070 ti"]
+    alert_below: 449
+    min_price: 220
+  - name: RTX 5070
+    match: ["rtx 5070"]
+    exclude: ["ti"]
+    alert_below: 329
+    min_price: 160
+  - name: RTX 5060 Ti
+    match: ["rtx 5060 ti"]
+    alert_below: 249
+    min_price: 120
+  - name: RX 9070 XT
+    match: ["rx 9070 xt", "radeon 9070 xt"]
+    alert_below: 359
+    min_price: 180
+  - name: RX 9070
+    match: ["rx 9070", "radeon 9070"]
+    exclude: ["xt"]
+    alert_below: 329
+    min_price: 160
+  - name: RX 9060 XT
+    match: ["rx 9060 xt", "radeon 9060 xt"]
+    alert_below: 199
+    min_price: 100
+  - name: Arc B580
+    match: ["arc b580"]
+    alert_below: 149
+    min_price: 80
+
+  # ── Processors ──
+  - name: Ryzen 7 9800X3D
+    match: ["9800x3d"]
+    alert_below: 279
+    min_price: 140
+  - name: Ryzen 9 9950X3D
+    match: ["9950x3d"]
+    alert_below: 419
+    min_price: 200
+  - name: Ryzen 7 9700X
+    match: ["ryzen 9700x"]
+    alert_below: 159
+    min_price: 80
+  - name: Core Ultra 9 285K
+    match: ["core ultra 285k", "core ultra 9 285k"]
+    alert_below: 349
+    min_price: 170
+  - name: Core Ultra 7 265K
+    match: ["core ultra 265k", "core ultra 7 265k"]
+    alert_below: 199
+    min_price: 100
+
+  # ── Memory & storage (no fixed target; relies on % below normal) ──
+  # (Parts are checked top to bottom, so bigger kits go first: a "64GB
+  #  (2x32GB)" title would otherwise also match "32GB".)
+  - name: DDR5 64GB kit
+    match: ["ddr5 64gb"]
+    exclude: ["sodimm", "so dimm"]
+  - name: DDR5 32GB kit
+    match: ["ddr5 32gb"]
+    exclude: ["sodimm", "so dimm"]
+  - name: 4TB NVMe SSD
+    match: ["nvme 4tb"]
+    exclude: ["enclosure", "external", "portable"]
+  - name: 2TB NVMe SSD
+    match: ["nvme 2tb"]
+    exclude: ["enclosure", "external", "portable"]
+
+  # ── Motherboards ──
+  - name: X870 / B850 motherboard
+    match: ["x870 motherboard", "b850 motherboard"]
+  - name: Z890 motherboard
+    match: ["z890 motherboard"]
+
+  # Example of watching specific Amazon listings directly (needs Keepa).
+  # Paste the product link from your browser:
+  # - name: My exact RTX 5080
+  #   match: ["rtx 5080"]
+  #   alert_below: 650
+  #   amazon:
+  #     - https://www.amazon.com/dp/B0XXXXXXXX
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Sources. Each one only runs if its key is set up (see README).
+# ─────────────────────────────────────────────────────────────────────────────
+keepa:            # Amazon, via a paid Keepa API key (KEEPA_API_KEY secret)
+  enabled: true
+  price_type: amazon    # "amazon" = sold by Amazon itself (fewest scams, best
+                        # chance an error gets honored). "new" = cheapest new
+                        # offer from any seller, more alerts but riskier.
+  deals_every_minutes: 30   # each deal search costs 5 Keepa tokens
+  keep_tokens: 0
+  deal_searches:
+    - name: Electronics, big drops in the last 24h
+      category: 172282       # Amazon "Electronics" (covers all PC parts)
+      min_drop_percent: 30
+      min_price: 40
+      max_price: 4000
+      date_range: day
+
+bestbuy:          # Best Buy, via a free API key (BESTBUY_API_KEY secret)
+  enabled: true
+  include_open_box: false   # true = also refurbished / pre-owned listings
+
+slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No key.
+  enabled: true
+  feeds:
+    - name: Hot Deals
+      url: https://slickdeals.net/newsearch.php?searchin=first&forumchoice%5B%5D=9&rss=1
+      # true = alert on EVERY new post matching a part above, not just price errors
+      alert_all_matches: false
+    - name: Frontpage
+      url: https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1
+      alert_all_matches: false

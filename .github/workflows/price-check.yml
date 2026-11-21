@@ -1,0 +1,76 @@
+name: Price check
+
+on:
+  schedule:
+    - cron: "3-59/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to do"
+        type: choice
+        options: [check, test-discord, dry-run]
+        default: check
+
+permissions:
+  contents: write
+
+concurrency:
+  group: price-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Restore bot memory
+        uses: actions/cache/restore@v5
+        with:
+          path: data/state.json
+          key: price-state-${{ github.run_id }}
+          restore-keys: price-state-
+
+      - name: Run
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          KEEPA_API_KEY: ${{ secrets.KEEPA_API_KEY }}
+          BESTBUY_API_KEY: ${{ secrets.BESTBUY_API_KEY }}
+          MODE: ${{ inputs.mode || 'check' }}
+        run: |
+          case "$MODE" in
+            test-discord) python -m pricebot --test-discord ;;
+            dry-run)      python -m pricebot --dry-run ;;
+            *)            python -m pricebot ;;
+          esac
+
+      - name: Save bot memory
+        if: always() && hashFiles('data/state.json') != ''
+        uses: actions/cache/save@v5
+        with:
+          path: data/state.json
+          key: price-state-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Keep-alive
+        if: always()
+        run: |
+          last=$(git log -1 --format=%ct)
+          age_days=$(( ( $(date +%s) - last ) / 86400 ))
+          if [ "$age_days" -ge 30 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > keepalive.txt
+            git add keepalive.txt
+            git commit -m "Keep scheduled price checks active"
+            git push
+          else
+            echo "Last commit was $age_days days ago; no keep-alive needed."
+          fi

@@ -14,6 +14,7 @@ class Part:
     alert_below: float | None = None
     min_drop_percent: float | None = None
     min_price: float | None = None
+    starting_price: float | None = None  # normal price to use until the bot has learned one
     amazon: list[str] = field(default_factory=list)  # ASINs to watch directly via Keepa
 
 

@@ -223,7 +223,9 @@ def test_dealnews(root):
     # $579 vs a learned typical price of $999 -> 42% off -> alert
     alert = evaluate(l, c.parts, c.settings, learned_typical=999)
     assert alert and alert.part.name == "RTX 5080" and alert.reasons[0].startswith("42% below")
-    assert evaluate(l, c.parts, c.settings) is None  # nothing known about normal prices yet
+    # Before anything is learned, the RTX 5080's $1,699 starting price is used
+    alert = evaluate(l, c.parts, c.settings)
+    assert alert and "starting estimate" in alert.reasons[0]
 
 
 # ---------------- eBay ----------------

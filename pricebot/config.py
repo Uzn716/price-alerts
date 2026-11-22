@@ -122,6 +122,7 @@ def _parse_part(raw: Any, index: int) -> Part:
         alert_below=_num(raw.get("alert_below"), f"{where} alert_below"),
         min_drop_percent=_num(raw.get("min_drop_percent"), f"{where} min_drop_percent"),
         min_price=_num(raw.get("min_price"), f"{where} min_price"),
+        starting_price=_num(raw.get("starting_price"), f"{where} starting_price"),
         amazon=[parse_asin(a) for a in _str_list(raw.get("amazon"), f"{where} amazon")],
     )
 

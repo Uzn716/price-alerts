@@ -59,10 +59,21 @@ def test_detector_rules(root):
     # 41% below the usual price: alert
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 620, 1049), ps, st)
     assert a and a.reasons == ["41% below avg"]
-    # No known normal price at all: no alert (no fixed targets any more)
-    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 579, None), ps, st) is None
+    # Part with no starting price and nothing learned yet: no known normal price, no alert
+    assert evaluate(_listing("EVGA GeForce RTX 3090 FTW3 24GB", 300, None), ps, st) is None
     # Called a "price error" but no proof it's 30% off: no alert
-    assert evaluate(_listing("Price mistake? RTX 5090 $1500", 1500, None, error_words=True), ps, st) is None
+    assert evaluate(_listing("Price mistake? RTX 3090 $500", 500, None, error_words=True), ps, st) is None
+    # Starting price is used until the bot has learned one ($1,699 for an RTX 5080)
+    a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 1099, None), ps, st)
+    assert a and a.reasons == ["35% below its typical price right now (starting estimate)"]
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1299, None), ps, st) is None  # only 24% off
+    # Once a learned price exists, it replaces the starting price
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1099, None), ps, st, learned_typical=1400) is None
+    a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 899, None), ps, st, learned_typical=1400)
+    assert a and "36% below its typical price over the last 30 days" in a.reasons[0]
+    # Broad groups (RAM, SSDs, monitors...) need 45%, since models vary a lot in price
+    assert evaluate(_listing("Corsair DDR5 32GB 6000MHz kit", 60, 100), ps, st) is None   # 40% off
+    assert evaluate(_listing("Corsair DDR5 32GB 6000MHz kit", 50, 100), ps, st) is not None  # 50% off
     # ...but when it IS 30%+ off, the alert mentions the price-error claim too
     a = evaluate(_listing("Price mistake? RTX 5090 $1000", 1000, 2000, error_words=True), ps, st)
     assert a and a.reasons[-1] == "The post also calls it a possible price error"

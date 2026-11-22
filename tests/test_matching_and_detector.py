@@ -50,27 +50,36 @@ def _listing(title, price, ref=None, **kw):
 def test_detector_rules(root):
     cfg = load_config(root / "config.yaml")
     ps, st = cfg.parts, cfg.settings
+    assert st.min_drop_percent == 30
 
     # Normal price: no alert
     assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 999, 1049), ps, st) is None
-    # Big drop vs average
+    # 25% off is a nice sale, but under the 30% bar: no alert
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 785, 1049), ps, st) is None
+    # 41% below the usual price: alert
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 620, 1049), ps, st)
-    assert a and "41% below avg" in a.reasons[0]
-    # Under fixed target
-    a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 579, None), ps, st)
-    assert a and "Under your $599 target" in a.reasons[0]
+    assert a and a.reasons == ["41% below avg"]
+    # No known normal price at all: no alert (no fixed targets any more)
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 579, None), ps, st) is None
+    # Called a "price error" but no proof it's 30% off: no alert
+    assert evaluate(_listing("Price mistake? RTX 5090 $1500", 1500, None, error_words=True), ps, st) is None
+    # ...but when it IS 30%+ off, the alert mentions the price-error claim too
+    a = evaluate(_listing("Price mistake? RTX 5090 $1000", 1000, 2000, error_words=True), ps, st)
+    assert a and a.reasons[-1] == "The post also calls it a possible price error"
+    # Learned typical price is used when it's lower than the store's own "usual" price
+    a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 600, 1200), ps, st, learned_typical=950)
+    assert a and "37% below its typical price over the last 30 days" in a.reasons[0]
+    assert a.listing.reference_price == 950
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 700, 1200), ps, st, learned_typical=950) is None
     # Accessory under the part's min_price is ignored
     assert evaluate(_listing("RTX 5080 GPU anti-sag holder", 19, 40), ps, st) is None
     # Laptop excluded even though cheap
     assert evaluate(_listing("Gaming Laptop RTX 5080 32GB", 500, 2500), ps, st) is None
     # Untracked PC part needs the stricter general threshold (50%)
-    assert evaluate(_listing("ASRock B650M motherboard", 80, 130), ps, st) is None
-    assert evaluate(_listing("ASRock B650M motherboard", 60, 130), ps, st) is not None
+    assert evaluate(_listing("ASRock A620M motherboard", 80, 130), ps, st) is None
+    assert evaluate(_listing("ASRock A620M motherboard", 60, 130), ps, st) is not None
     # Unrelated product never alerts
     assert evaluate(_listing("Instant Pot 6qt", 20, 100), ps, st) is None
-    # Slickdeals-style: no price, but called a price error
-    a = evaluate(_listing("Price mistake? RTX 5090 at Walmart", None, error_words=True), ps, st)
-    assert a and a.reasons == ["Posted as a possible price error"]
 
 
 def test_direct_watch_skips_title_matching():

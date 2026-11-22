@@ -32,10 +32,12 @@ def parse_asin(value: str) -> str:
 
 @dataclass
 class Settings:
-    min_drop_percent: float = 35
+    min_drop_percent: float = 30
     general_min_drop_percent: float = 50
     min_price: float = 25
     realert_after_hours: float = 24
+    learn_window_days: int = 30
+    learn_min_days: int = 3
     mention: str = ""
     general_keywords: list[str] = field(default_factory=list)
     exclude: list[str] = field(default_factory=list)
@@ -142,10 +144,12 @@ def load_config(path: str | Path) -> Config:
 
     s = raw.get("settings") or {}
     settings = Settings(
-        min_drop_percent=_num(s.get("min_drop_percent"), "min_drop_percent") or 35,
+        min_drop_percent=_num(s.get("min_drop_percent"), "min_drop_percent") or 30,
         general_min_drop_percent=_num(s.get("general_min_drop_percent"), "general_min_drop_percent") or 50,
         min_price=_num(s.get("min_price"), "min_price") or 0,
         realert_after_hours=_num(s.get("realert_after_hours"), "realert_after_hours") or 24,
+        learn_window_days=int(_num(s.get("learn_window_days"), "learn_window_days") or 30),
+        learn_min_days=int(_num(s.get("learn_min_days"), "learn_min_days") or 3),
         mention=str(s.get("mention") or ""),
         general_keywords=_str_list(s.get("general_keywords"), "general_keywords"),
         exclude=_str_list(s.get("exclude"), "exclude"),

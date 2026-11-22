@@ -34,6 +34,7 @@ class Listing:
     error_words: bool = False  # the post itself says "price error" etc.
     alert_all_matches: bool = False  # alert on any new post matching a part
     note: str | None = None  # extra caution shown in the alert (e.g. marketplace seller info)
+    learn_only: bool = False  # just record the price (e.g. old posts on a feed's first run)
 
     @property
     def key(self) -> str:

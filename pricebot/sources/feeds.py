@@ -128,8 +128,6 @@ class FeedSource:
             if not item.item_id or self.state.is_seen(feed_id, item.item_id):
                 continue
             self.state.mark_seen(feed_id, item.item_id)
-            if first_time:
-                continue  # don't flood you with old posts on the very first run
             listings.append(
                 Listing(
                     source=self.name,
@@ -141,6 +139,9 @@ class FeedSource:
                     image_url=item.image_url,
                     error_words=bool(ERROR_RE.search(item.title) or ERROR_RE.search(item.body[:600])),
                     alert_all_matches=bool(feed.get("alert_all_matches", False)),
+                    # On a feed's very first run, old posts only teach the bot
+                    # prices; they never alert (so you aren't flooded).
+                    learn_only=first_time,
                 )
             )
         if first_time:

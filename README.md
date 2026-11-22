@@ -145,20 +145,28 @@ change. Things you'll most likely want to change:
 * **More Slickdeals alerts:** set `alert_all_matches: true` on a feed to hear
   about *every* new deal on your parts, not only probable errors.
 
-## How it decides something is a price error
+## How it decides something is worth an alert
 
-A listing has to match one of your parts (or, for untracked PC parts, the
-`general_keywords` with a stricter 50% bar), cost at least `min_price`, and then
-meet at least one of these:
+One rule: **the price must be at least 30% below the part's normal price**
+(`min_drop_percent` in `config.yaml`).
 
-* **Far below its normal price.** For Amazon, "normal" is the lower of Keepa's
-  30-day and 90-day averages. For Best Buy, it's the lower of Best Buy's
-  "regular price" and the bot's own record of what that item usually sells for.
-  For eBay, it's the median price of all new listings for that part.
-  Using the lower number avoids false alarms from inflated "was" prices.
-* **Under your `alert_below` price.**
-* **Called a price error.** A Slickdeals or DealNews post that says
-  "price error", "price mistake", "glitch", or similar.
+"Normal" is the lowest of whatever the bot knows:
+* **The store's own usual price:** Keepa's 30-day and 90-day averages for
+  Amazon, Best Buy's "regular price", or the typical price of new listings on eBay.
+* **The typical price the bot has learned:** it records every price it sees for
+  each part, from any store or deal site. After 3 days of prices, the median of
+  the last 30 days becomes the part's learned normal price. Nobody has to set
+  target prices by hand. Change this with `learn_window_days` and `learn_min_days`.
+
+Using the lowest number keeps inflated "was $X" prices from causing false alarms.
+
+A listing also has to match one of your parts and cost at least that part's
+`min_price`, which filters out accessories. PC parts that aren't on your list
+need a stricter 50% (`general_min_drop_percent`).
+
+If you want, you can give a part an `alert_below` price to also get alerts
+under that price. None are set by default. A post that calls itself a
+"price error" doesn't alert by itself; it still has to be 30% below normal.
 
 Each listing alerts once. It alerts again only if the price drops another 5%,
 or after `realert_after_hours`.

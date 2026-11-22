@@ -30,11 +30,19 @@ settings:
     - radeon
     - ryzen
     - core ultra
+    - core i9
+    - core i7
+    - core i5
     - motherboard
     - ddr5
+    - ddr4
     - nvme
     - power supply
     - cpu cooler
+    - liquid cooler
+    - gaming monitor
+    - pc case
+    - mid tower
 
   # Titles containing any of these are skipped (unless you watch the exact ASIN).
   exclude:
@@ -68,7 +76,8 @@ settings:
 #    min_drop_percent / min_price: optional per-part overrides.
 # ─────────────────────────────────────────────────────────────────────────────
 parts:
-  # ── Graphics cards ──
+
+  # ── Graphics cards: RTX 50 series (targets = rare-deal examples, edit freely) ──
   - name: RTX 5090
     match: ["rtx 5090"]
     alert_below: 1199
@@ -90,6 +99,79 @@ parts:
     match: ["rtx 5060 ti"]
     alert_below: 249
     min_price: 120
+  - name: RTX 5060
+    match: ["rtx 5060"]
+    exclude: ["ti"]
+    min_price: 100
+
+  # ── Graphics cards: RTX 40 series ──
+  - name: RTX 4090
+    match: ["rtx 4090"]
+    min_price: 600
+  - name: RTX 4080 Super
+    match: ["rtx 4080 super"]
+    min_price: 350
+  - name: RTX 4080
+    match: ["rtx 4080"]
+    exclude: ["super"]
+    min_price: 350
+  - name: RTX 4070 Ti Super
+    match: ["rtx 4070 ti super"]
+    min_price: 260
+  - name: RTX 4070 Ti
+    match: ["rtx 4070 ti"]
+    exclude: ["super"]
+    min_price: 250
+  - name: RTX 4070 Super
+    match: ["rtx 4070 super"]
+    exclude: ["ti"]
+    min_price: 200
+  - name: RTX 4070
+    match: ["rtx 4070"]
+    exclude: ["ti", "super"]
+    min_price: 180
+  - name: RTX 4060 Ti
+    match: ["rtx 4060 ti"]
+    min_price: 140
+  - name: RTX 4060
+    match: ["rtx 4060"]
+    exclude: ["ti"]
+    min_price: 110
+
+  # ── Graphics cards: RTX 30 series ──
+  - name: RTX 3090 Ti
+    match: ["rtx 3090 ti"]
+    min_price: 350
+  - name: RTX 3090
+    match: ["rtx 3090"]
+    exclude: ["ti"]
+    min_price: 300
+  - name: RTX 3080 Ti
+    match: ["rtx 3080 ti"]
+    min_price: 250
+  - name: RTX 3080
+    match: ["rtx 3080"]
+    exclude: ["ti"]
+    min_price: 200
+  - name: RTX 3070 Ti
+    match: ["rtx 3070 ti"]
+    min_price: 170
+  - name: RTX 3070
+    match: ["rtx 3070"]
+    exclude: ["ti"]
+    min_price: 150
+  - name: RTX 3060 Ti
+    match: ["rtx 3060 ti"]
+    min_price: 130
+  - name: RTX 3060
+    match: ["rtx 3060"]
+    exclude: ["ti"]
+    min_price: 110
+  - name: RTX 3050
+    match: ["rtx 3050"]
+    min_price: 80
+
+  # ── Graphics cards: AMD Radeon RX 9000 ──
   - name: RX 9070 XT
     match: ["rx 9070 xt", "radeon 9070 xt"]
     alert_below: 359
@@ -103,54 +185,259 @@ parts:
     match: ["rx 9060 xt", "radeon 9060 xt"]
     alert_below: 199
     min_price: 100
+
+  # ── Graphics cards: AMD Radeon RX 7000 ──
+  - name: RX 7900 XTX
+    match: ["rx 7900 xtx", "radeon 7900 xtx"]
+    min_price: 300
+  - name: RX 7900 XT
+    match: ["rx 7900 xt", "radeon 7900 xt"]
+    min_price: 250
+  - name: RX 7900 GRE
+    match: ["rx 7900 gre", "radeon 7900 gre"]
+    min_price: 180
+  - name: RX 7800 XT
+    match: ["rx 7800 xt", "radeon 7800 xt"]
+    min_price: 160
+  - name: RX 7700 XT
+    match: ["rx 7700 xt", "radeon 7700 xt"]
+    min_price: 140
+  - name: RX 7600 XT
+    match: ["rx 7600 xt", "radeon 7600 xt"]
+    min_price: 110
+  - name: RX 7600
+    match: ["rx 7600", "radeon 7600"]
+    exclude: ["xt"]
+    min_price: 90
+
+  # ── Graphics cards: AMD Radeon RX 6000 ──
+  - name: RX 6950 XT
+    match: ["rx 6950 xt", "radeon 6950 xt"]
+    min_price: 220
+  - name: RX 6900 XT
+    match: ["rx 6900 xt", "radeon 6900 xt"]
+    min_price: 200
+  - name: RX 6800 XT
+    match: ["rx 6800 xt", "radeon 6800 xt"]
+    min_price: 170
+  - name: RX 6800
+    match: ["rx 6800", "radeon 6800"]
+    exclude: ["xt"]
+    min_price: 150
+  - name: RX 6750 XT
+    match: ["rx 6750 xt", "radeon 6750 xt"]
+    min_price: 130
+  - name: RX 6700 XT
+    match: ["rx 6700 xt", "radeon 6700 xt"]
+    min_price: 120
+  - name: RX 6650 XT
+    match: ["rx 6650 xt", "radeon 6650 xt"]
+    min_price: 100
+  - name: RX 6600
+    match: ["rx 6600", "radeon 6600"]
+    exclude: ["xt"]
+    min_price: 90
+
+  # ── Graphics cards: Intel Arc ──
   - name: Arc B580
     match: ["arc b580"]
     alert_below: 149
     min_price: 80
+  - name: Arc B570
+    match: ["arc b570"]
+    min_price: 70
+  - name: Arc A770
+    match: ["arc a770"]
+    min_price: 90
+  - name: Arc A750
+    match: ["arc a750"]
+    min_price: 70
 
-  # ── Processors ──
-  - name: Ryzen 7 9800X3D
-    match: ["9800x3d"]
-    alert_below: 279
-    min_price: 140
+  # ── Processors: AMD AM5 ──
   - name: Ryzen 9 9950X3D
     match: ["9950x3d"]
     alert_below: 419
     min_price: 200
+  - name: Ryzen 7 9800X3D
+    match: ["9800x3d"]
+    alert_below: 279
+    min_price: 140
+  - name: Ryzen 9 9950X
+    match: ["ryzen 9950x"]
+    exclude: ["x3d"]
+    min_price: 180
+  - name: Ryzen 9 9900X
+    match: ["ryzen 9900x"]
+    exclude: ["x3d"]
+    min_price: 130
   - name: Ryzen 7 9700X
     match: ["ryzen 9700x"]
     alert_below: 159
     min_price: 80
+  - name: Ryzen 5 9600X
+    match: ["ryzen 9600x"]
+    min_price: 70
+  - name: Ryzen 9 7950X3D
+    match: ["7950x3d"]
+    min_price: 180
+  - name: Ryzen 7 7800X3D
+    match: ["7800x3d"]
+    min_price: 140
+  - name: Ryzen 7 7700X
+    match: ["ryzen 7700x"]
+    min_price: 90
+  - name: Ryzen 5 7600X
+    match: ["ryzen 7600x"]
+    min_price: 70
+
+  # ── Processors: AMD AM4 ──
+  - name: Ryzen 7 5800X3D
+    match: ["5800x3d"]
+    min_price: 110
+  - name: Ryzen 7 5700X3D
+    match: ["5700x3d"]
+    min_price: 90
+  - name: Ryzen 9 5950X
+    match: ["ryzen 5950x"]
+    min_price: 130
+  - name: Ryzen 9 5900X
+    match: ["ryzen 5900x"]
+    exclude: ["xt"]
+    min_price: 100
+  - name: Ryzen 7 5800X
+    match: ["ryzen 5800x"]
+    exclude: ["x3d", "xt"]
+    min_price: 70
+  - name: Ryzen 7 5700X
+    match: ["ryzen 5700x"]
+    exclude: ["x3d"]
+    min_price: 60
+  - name: Ryzen 5 5600X
+    match: ["ryzen 5600x"]
+    exclude: ["x3d", "xt"]
+    min_price: 50
+  - name: Ryzen 5 5600
+    match: ["ryzen 5600"]
+    exclude: ["x", "xt", "g", "gt", "x3d"]
+    min_price: 45
+
+  # ── Processors: Intel ──
   - name: Core Ultra 9 285K
     match: ["core ultra 285k", "core ultra 9 285k"]
     alert_below: 349
     min_price: 170
   - name: Core Ultra 7 265K
-    match: ["core ultra 265k", "core ultra 7 265k"]
+    match: ["core ultra 265k", "core ultra 7 265k", "265kf"]
     alert_below: 199
     min_price: 100
+  - name: Core Ultra 5 245K
+    match: ["core ultra 245k", "core ultra 5 245k", "245kf"]
+    min_price: 80
+  - name: Core i9-14900K
+    match: ["14900k", "14900kf"]
+    min_price: 170
+  - name: Core i7-14700K
+    match: ["14700k", "14700kf"]
+    min_price: 130
+  - name: Core i5-14600K
+    match: ["14600k", "14600kf"]
+    min_price: 90
+  - name: Core i9-13900K
+    match: ["13900k", "13900kf"]
+    min_price: 150
+  - name: Core i7-13700K
+    match: ["13700k", "13700kf"]
+    min_price: 110
+  - name: Core i5-13600K
+    match: ["13600k", "13600kf"]
+    min_price: 80
 
-  # ── Memory & storage (no fixed target; relies on % below normal) ──
-  # (Parts are checked top to bottom, so bigger kits go first: a "64GB
-  #  (2x32GB)" title would otherwise also match "32GB".)
+  # ── Memory (parts are checked top to bottom, so bigger kits go first) ──
   - name: DDR5 64GB kit
     match: ["ddr5 64gb"]
     exclude: ["sodimm", "so dimm"]
+    min_price: 60
   - name: DDR5 32GB kit
     match: ["ddr5 32gb"]
     exclude: ["sodimm", "so dimm"]
+    min_price: 40
+  - name: DDR4 64GB kit
+    match: ["ddr4 64gb"]
+    exclude: ["sodimm", "so dimm"]
+    min_price: 40
+  - name: DDR4 32GB kit
+    match: ["ddr4 32gb"]
+    exclude: ["sodimm", "so dimm"]
+    min_price: 30
+
+  # ── Storage ──
+  - name: 8TB NVMe SSD
+    match: ["nvme 8tb"]
+    exclude: ["enclosure", "external", "portable"]
+    min_price: 150
   - name: 4TB NVMe SSD
     match: ["nvme 4tb"]
     exclude: ["enclosure", "external", "portable"]
+    min_price: 90
   - name: 2TB NVMe SSD
     match: ["nvme 2tb"]
     exclude: ["enclosure", "external", "portable"]
+    min_price: 50
+  - name: 1TB NVMe SSD
+    match: ["nvme 1tb"]
+    exclude: ["enclosure", "external", "portable"]
+    min_price: 30
 
   # ── Motherboards ──
-  - name: X870 / B850 motherboard
-    match: ["x870 motherboard", "b850 motherboard"]
-  - name: Z890 motherboard
-    match: ["z890 motherboard"]
+  - name: AM5 motherboard (X870 / B850 / X670 / B650)
+    match: ["x870 motherboard", "b850 motherboard", "x670 motherboard", "b650 motherboard"]
+    min_price: 60
+  - name: AM4 motherboard (X570 / B550)
+    match: ["x570 motherboard", "b550 motherboard"]
+    min_price: 50
+  - name: Intel motherboard (Z890 / Z790 / B760)
+    match: ["z890 motherboard", "z790 motherboard", "b760 motherboard"]
+    min_price: 60
+
+  # ── Power supplies ──
+  - name: 1000W+ power supply
+    match: ["1000w power supply", "1000 watt power supply", "1200w power supply", "1200 watt power supply"]
+    min_price: 60
+  - name: 850W power supply
+    match: ["850w power supply", "850 watt power supply"]
+    min_price: 45
+
+  # ── Monitors ──
+  - name: OLED gaming monitor
+    match: ["oled gaming monitor", "qd oled monitor", "oled monitor"]
+    min_price: 200
+  - name: 4K gaming monitor
+    match: ["4k gaming monitor"]
+    exclude: ["oled"]
+    min_price: 150
+  - name: 1440p gaming monitor
+    match: ["1440p gaming monitor", "qhd gaming monitor"]
+    exclude: ["oled"]
+    min_price: 100
+
+  # ── Cooling and cases ──
+  - name: 360mm AIO cooler
+    match: ["360mm aio", "360mm liquid cpu cooler", "360 aio"]
+    min_price: 50
+
+  # ── Handheld gaming PCs ──
+  - name: ROG Ally
+    match: ["rog ally"]
+    min_price: 250
+  - name: Legion Go
+    match: ["legion go"]
+    min_price: 250
+  - name: MSI Claw
+    match: ["msi claw"]
+    min_price: 250
+  - name: Steam Deck
+    match: ["steam deck"]
+    min_price: 250
 
   # Example of watching specific Amazon listings directly (needs Keepa).
   # Paste the product link from your browser:
@@ -202,8 +489,8 @@ dealnews:         # DealNews editors' picks from many stores. No key needed.
 
 ebay:             # New Buy-It-Now listings on eBay (EBAY_CLIENT_ID + EBAY_CLIENT_SECRET secrets)
   enabled: true
-  every_minutes: 15              # free accounts get 5,000 searches/day; this uses ~2,000
-  max_searches_per_run: 25
+  every_minutes: 15              # free accounts get 5,000 searches/day; this uses ~3,900
+  max_searches_per_run: 40      # 94 parts -> each one searched about every 35 min
   # Only alert on sellers with a solid record (cuts down on scams):
   min_seller_feedback_percent: 98
   min_seller_feedback_score: 50

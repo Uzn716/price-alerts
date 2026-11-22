@@ -64,8 +64,8 @@ def test_detector_rules(root):
     # Laptop excluded even though cheap
     assert evaluate(_listing("Gaming Laptop RTX 5080 32GB", 500, 2500), ps, st) is None
     # Untracked PC part needs the stricter general threshold (50%)
-    assert evaluate(_listing("ASRock B650M motherboard", 80, 130), ps, st) is None
-    assert evaluate(_listing("ASRock B650M motherboard", 60, 130), ps, st) is not None
+    assert evaluate(_listing("ASRock A620M motherboard", 80, 130), ps, st) is None
+    assert evaluate(_listing("ASRock A620M motherboard", 60, 130), ps, st) is not None
     # Unrelated product never alerts
     assert evaluate(_listing("Instant Pot 6qt", 20, 100), ps, st) is None
     # Slickdeals-style: no price, but called a price error

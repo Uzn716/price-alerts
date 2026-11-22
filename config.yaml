@@ -20,9 +20,10 @@ settings:
 
   # AUTOMATIC NORMAL PRICES: the bot remembers every price it sees for each
   # part and uses the typical (median) price of the last learn_window_days
-  # days as its normal price, once it has learn_min_days days of prices.
+  # days as its normal price, once it has learn_min_days days of prices
+  # (not counting today). With 1, a part can alert from its second day on.
   learn_window_days: 30
-  learn_min_days: 3
+  learn_min_days: 1
 
   # Don't repeat an alert for the same listing for this many hours
   # (unless the price drops another 5% or more).

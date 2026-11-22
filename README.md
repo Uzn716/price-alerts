@@ -154,8 +154,9 @@ One rule: **the price must be at least 30% below the part's normal price**
 * **The store's own usual price:** Keepa's 30-day and 90-day averages for
   Amazon, Best Buy's "regular price", or the typical price of new listings on eBay.
 * **The typical price the bot has learned:** it records every price it sees for
-  each part, from any store or deal site. After 3 days of prices, the median of
-  the last 30 days becomes the part's learned normal price. Nobody has to set
+  each part, from any store or deal site. From the day after it first sees a
+  part's price, the median of the last 30 days becomes that part's learned
+  normal price. Nobody has to set
   target prices by hand. Change this with `learn_window_days` and `learn_min_days`.
 
 Using the lowest number keeps inflated "was $X" prices from causing false alarms.

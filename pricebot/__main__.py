@@ -36,6 +36,7 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
     discord = None if dry_run else Discord(config.discord_webhook_url, config.settings.mention, session)
 
     alerts: list[Alert] = []
+    alerted_keys: set[str] = set()  # the same post can appear in two feeds in one run
     warnings: list[dict] = []
 
     for source_cls in ALL_SOURCES:
@@ -67,12 +68,20 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
         st = config.settings
         for listing in listings:
             part = resolve_part(listing, config.parts, st)
-            low_key = f"low:{part.name}" if part else None
-            learned_low = state.recent_low(low_key, now, st.learn_window_days, st.learn_min_days) if part else None
+            low_key = f"prices:{part.name}" if part else None
+            typical = (
+                state.typical_price(low_key, now, min_days=st.learn_min_days, days=st.learn_window_days)
+                if part else None
+            )
             if not listing.learn_only:
-                alert = evaluate(listing, config.parts, st, learned_low=learned_low, part=part)
-                if alert and state.should_alert(listing.key, listing.price, st.realert_after_hours, now):
+                alert = evaluate(listing, config.parts, st, learned_typical=typical, part=part)
+                if (
+                    alert
+                    and listing.key not in alerted_keys
+                    and state.should_alert(listing.key, listing.price, st.realert_after_hours, now)
+                ):
                     alerts.append(alert)
+                    alerted_keys.add(listing.key)
                     found += 1
             # Remember this price so the bot learns what "normal" looks like for the part.
             if part and listing.price is not None and listing.price >= price_floor(part, st):

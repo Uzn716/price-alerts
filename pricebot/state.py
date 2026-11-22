@@ -78,21 +78,18 @@ class State:
         if day not in days or price < days[day]:
             days[day] = round(price, 2)
 
-    def typical_price(self, key: str, now: datetime | None = None, min_days: int = 5) -> float | None:
-        """Median of daily lows, excluding today, once we have enough days."""
-        today = (now or utcnow()).date().isoformat()
-        values = [p for d, p in self.history.get(key, {}).items() if d != today]
+    def typical_price(
+        self, key: str, now: datetime | None = None, min_days: int = 5, days: int | None = None
+    ) -> float | None:
+        """Median of daily lows (excluding today, optionally only the last `days` days),
+        once we have at least `min_days` days of prices."""
+        now = now or utcnow()
+        today = now.date().isoformat()
+        cutoff = (now - timedelta(days=days)).date().isoformat() if days else ""
+        values = [p for d, p in self.history.get(key, {}).items() if d != today and d >= cutoff]
         if len(values) < min_days:
             return None
         return statistics.median(values)
-
-    def recent_low(self, key: str, now: datetime | None = None, days: int = 30, min_days: int = 3) -> float | None:
-        """Lowest daily price in the last `days` days, once we have `min_days` days of data."""
-        cutoff = ((now or utcnow()) - timedelta(days=days)).date().isoformat()
-        values = [p for d, p in self.history.get(key, {}).items() if d >= cutoff]
-        if len(values) < min_days:
-            return None
-        return min(values)
 
     # ---- alert de-duplication -----------------------------------------
     def should_alert(self, key: str, price: float | None, realert_hours: float, now: datetime | None = None) -> bool:

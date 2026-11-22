@@ -32,11 +32,10 @@ def parse_asin(value: str) -> str:
 
 @dataclass
 class Settings:
-    min_drop_percent: float = 35
+    min_drop_percent: float = 30
     general_min_drop_percent: float = 50
     min_price: float = 25
     realert_after_hours: float = 24
-    beat_low_percent: float = 10
     learn_window_days: int = 30
     learn_min_days: int = 3
     mention: str = ""
@@ -145,11 +144,10 @@ def load_config(path: str | Path) -> Config:
 
     s = raw.get("settings") or {}
     settings = Settings(
-        min_drop_percent=_num(s.get("min_drop_percent"), "min_drop_percent") or 35,
+        min_drop_percent=_num(s.get("min_drop_percent"), "min_drop_percent") or 30,
         general_min_drop_percent=_num(s.get("general_min_drop_percent"), "general_min_drop_percent") or 50,
         min_price=_num(s.get("min_price"), "min_price") or 0,
         realert_after_hours=_num(s.get("realert_after_hours"), "realert_after_hours") or 24,
-        beat_low_percent=_num(s.get("beat_low_percent"), "beat_low_percent") if s.get("beat_low_percent") is not None else 10,
         learn_window_days=int(_num(s.get("learn_window_days"), "learn_window_days") or 30),
         learn_min_days=int(_num(s.get("learn_min_days"), "learn_min_days") or 3),
         mention=str(s.get("mention") or ""),

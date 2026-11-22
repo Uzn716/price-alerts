@@ -5,9 +5,11 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 settings:
-  # How far below its normal price something must be to count as a price error.
-  # Used for parts in your list below (each part can override it).
-  min_drop_percent: 35
+  # THE MAIN RULE: only alert when something is at least this % below its
+  # normal price. "Normal" = the lowest of the store's own usual price and the
+  # typical price the bot has learned for that part (see learn_* below).
+  # Each part can override it with its own min_drop_percent.
+  min_drop_percent: 30
 
   # Stricter bar for PC parts that AREN'T in your list but match
   # general_keywords (so you still hear about a random 60%-off motherboard).
@@ -16,12 +18,9 @@ settings:
   # Ignore anything cheaper than this (filters out cables, stickers, etc.).
   min_price: 25
 
-  # AUTOMATIC TARGETS: the bot remembers every price it sees for each part
-  # and alerts when a deal beats the lowest price of the last
-  # learn_window_days by at least beat_low_percent. It needs learn_min_days
-  # days of prices for a part before this kicks in. Set beat_low_percent: 0
-  # to turn it off.
-  beat_low_percent: 10
+  # AUTOMATIC NORMAL PRICES: the bot remembers every price it sees for each
+  # part and uses the typical (median) price of the last learn_window_days
+  # days as its normal price, once it has learn_min_days days of prices.
   learn_window_days: 30
   learn_min_days: 3
 
@@ -78,35 +77,29 @@ settings:
 #                  matter). Give several lines to allow alternatives.
 #    exclude:      words that rule a title out (e.g. "ti" so a 5070 search
 #                  doesn't catch 5070 Ti cards).
-#    alert_below:  OPTIONAL. Always alert under this price. You don't need it:
-#                  the bot learns each part's lowest price by itself (see
-#                  beat_low_percent above). The few numbers below are examples.
+#    alert_below:  OPTIONAL. Also alert whenever the price is under this,
+#                  even if it isn't 30% off. Not needed: none are set below.
 #    amazon:       optional Amazon links/ASINs to watch directly (needs Keepa).
 #    min_drop_percent / min_price: optional per-part overrides.
 # ─────────────────────────────────────────────────────────────────────────────
 parts:
 
-  # ── Graphics cards: RTX 50 series (targets = rare-deal examples, edit freely) ──
+  # ── Graphics cards: RTX 50 series ──
   - name: RTX 5090
     match: ["rtx 5090"]
-    alert_below: 1199
     min_price: 600
   - name: RTX 5080
     match: ["rtx 5080"]
-    alert_below: 599
     min_price: 300
   - name: RTX 5070 Ti
     match: ["rtx 5070 ti"]
-    alert_below: 449
     min_price: 220
   - name: RTX 5070
     match: ["rtx 5070"]
     exclude: ["ti"]
-    alert_below: 329
     min_price: 160
   - name: RTX 5060 Ti
     match: ["rtx 5060 ti"]
-    alert_below: 249
     min_price: 120
   - name: RTX 5060
     match: ["rtx 5060"]
@@ -183,16 +176,13 @@ parts:
   # ── Graphics cards: AMD Radeon RX 9000 ──
   - name: RX 9070 XT
     match: ["rx 9070 xt", "radeon 9070 xt"]
-    alert_below: 359
     min_price: 180
   - name: RX 9070
     match: ["rx 9070", "radeon 9070"]
     exclude: ["xt"]
-    alert_below: 329
     min_price: 160
   - name: RX 9060 XT
     match: ["rx 9060 xt", "radeon 9060 xt"]
-    alert_below: 199
     min_price: 100
 
   # ── Graphics cards: AMD Radeon RX 7000 ──
@@ -250,7 +240,6 @@ parts:
   # ── Graphics cards: Intel Arc ──
   - name: Arc B580
     match: ["arc b580"]
-    alert_below: 149
     min_price: 80
   - name: Arc B570
     match: ["arc b570"]
@@ -265,11 +254,9 @@ parts:
   # ── Processors: AMD AM5 ──
   - name: Ryzen 9 9950X3D
     match: ["9950x3d"]
-    alert_below: 419
     min_price: 200
   - name: Ryzen 7 9800X3D
     match: ["9800x3d"]
-    alert_below: 279
     min_price: 140
   - name: Ryzen 9 9950X
     match: ["ryzen 9950x"]
@@ -281,7 +268,6 @@ parts:
     min_price: 130
   - name: Ryzen 7 9700X
     match: ["ryzen 9700x"]
-    alert_below: 159
     min_price: 80
   - name: Ryzen 5 9600X
     match: ["ryzen 9600x"]
@@ -333,11 +319,9 @@ parts:
   # ── Processors: Intel ──
   - name: Core Ultra 9 285K
     match: ["core ultra 285k", "core ultra 9 285k"]
-    alert_below: 349
     min_price: 170
   - name: Core Ultra 7 265K
     match: ["core ultra 265k", "core ultra 7 265k", "265kf"]
-    alert_below: 199
     min_price: 100
   - name: Core Ultra 5 245K
     match: ["core ultra 245k", "core ultra 5 245k", "245kf"]
@@ -452,7 +436,6 @@ parts:
   # Paste the product link from your browser:
   # - name: My exact RTX 5080
   #   match: ["rtx 5080"]
-  #   alert_below: 650
   #   amazon:
   #     - https://www.amazon.com/dp/B0XXXXXXXX
 

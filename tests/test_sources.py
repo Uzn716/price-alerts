@@ -220,8 +220,10 @@ def test_dealnews(root):
     l = listings[0]
     assert (l.price, l.store, l.image_url) == (579.0, "Newegg", "https://img.dealnews.com/b.jpg")
     assert l.error_words
-    alert = evaluate(l, c.parts, c.settings)
-    assert alert and alert.part.name == "RTX 5080" and "Under your $599 target" in alert.reasons[0]
+    # $579 vs a learned typical price of $999 -> 42% off -> alert
+    alert = evaluate(l, c.parts, c.settings, learned_typical=999)
+    assert alert and alert.part.name == "RTX 5080" and alert.reasons[0].startswith("42% below")
+    assert evaluate(l, c.parts, c.settings) is None  # nothing known about normal prices yet
 
 
 # ---------------- eBay ----------------

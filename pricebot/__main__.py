@@ -9,7 +9,7 @@ import sys
 from datetime import datetime, timezone
 
 from .config import ConfigError, load_config
-from .detector import evaluate
+from .detector import evaluate, price_floor, resolve_part
 from .http import SourceError, make_session
 from .models import Alert, Listing, Part
 from .notify import GREY, Discord, alert_embed, info_embed
@@ -63,13 +63,22 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
             continue
         state.record_success(source.name)
 
-        found = 0
+        found = learned = 0
+        st = config.settings
         for listing in listings:
-            alert = evaluate(listing, config.parts, config.settings)
-            if alert and state.should_alert(listing.key, listing.price, config.settings.realert_after_hours, now):
-                alerts.append(alert)
-                found += 1
-        print(f"- {source.name}: checked {len(listings)} listings, {found} alert(s)")
+            part = resolve_part(listing, config.parts, st)
+            low_key = f"low:{part.name}" if part else None
+            learned_low = state.recent_low(low_key, now, st.learn_window_days, st.learn_min_days) if part else None
+            if not listing.learn_only:
+                alert = evaluate(listing, config.parts, st, learned_low=learned_low, part=part)
+                if alert and state.should_alert(listing.key, listing.price, st.realert_after_hours, now):
+                    alerts.append(alert)
+                    found += 1
+            # Remember this price so the bot learns what "normal" looks like for the part.
+            if part and listing.price is not None and listing.price >= price_floor(part, st):
+                state.record_price(low_key, listing.price, now)
+                learned += 1
+        print(f"- {source.name}: checked {len(listings)} listings, {found} alert(s), learned {learned} price(s)")
 
     for alert in alerts:
         lst = alert.listing

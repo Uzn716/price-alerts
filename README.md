@@ -156,7 +156,13 @@ meet at least one of these:
   "regular price" and the bot's own record of what that item usually sells for.
   For eBay, it's the median price of all new listings for that part.
   Using the lower number avoids false alarms from inflated "was" prices.
-* **Under your `alert_below` price.**
+* **Beats the lowest price seen recently.** The bot records every price it
+  sees for each part, from any store or deal site. Once it has at least 3 days
+  of prices, it alerts when a deal is 10% or more under the lowest price of the
+  last 30 days. These automatic targets keep up with the market, so you don't
+  have to set prices by hand. Change this with `beat_low_percent`,
+  `learn_window_days` and `learn_min_days`.
+* **Under your `alert_below` price** (optional).
 * **Called a price error.** A Slickdeals or DealNews post that says
   "price error", "price mistake", "glitch", or similar.
 

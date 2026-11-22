@@ -16,6 +16,15 @@ settings:
   # Ignore anything cheaper than this (filters out cables, stickers, etc.).
   min_price: 25
 
+  # AUTOMATIC TARGETS: the bot remembers every price it sees for each part
+  # and alerts when a deal beats the lowest price of the last
+  # learn_window_days by at least beat_low_percent. It needs learn_min_days
+  # days of prices for a part before this kicks in. Set beat_low_percent: 0
+  # to turn it off.
+  beat_low_percent: 10
+  learn_window_days: 30
+  learn_min_days: 3
+
   # Don't repeat an alert for the same listing for this many hours
   # (unless the price drops another 5% or more).
   realert_after_hours: 24
@@ -69,9 +78,9 @@ settings:
 #                  matter). Give several lines to allow alternatives.
 #    exclude:      words that rule a title out (e.g. "ti" so a 5070 search
 #                  doesn't catch 5070 Ti cards).
-#    alert_below:  always alert under this price, no matter the "normal" price.
-#                  The numbers below are EXAMPLES set well under launch prices.
-#                  Change them to whatever would make you buy instantly.
+#    alert_below:  OPTIONAL. Always alert under this price. You don't need it:
+#                  the bot learns each part's lowest price by itself (see
+#                  beat_low_percent above). The few numbers below are examples.
 #    amazon:       optional Amazon links/ASINs to watch directly (needs Keepa).
 #    min_drop_percent / min_price: optional per-part overrides.
 # ─────────────────────────────────────────────────────────────────────────────

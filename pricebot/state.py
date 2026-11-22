@@ -86,6 +86,14 @@ class State:
             return None
         return statistics.median(values)
 
+    def recent_low(self, key: str, now: datetime | None = None, days: int = 30, min_days: int = 3) -> float | None:
+        """Lowest daily price in the last `days` days, once we have `min_days` days of data."""
+        cutoff = ((now or utcnow()) - timedelta(days=days)).date().isoformat()
+        values = [p for d, p in self.history.get(key, {}).items() if d >= cutoff]
+        if len(values) < min_days:
+            return None
+        return min(values)
+
     # ---- alert de-duplication -----------------------------------------
     def should_alert(self, key: str, price: float | None, realert_hours: float, now: datetime | None = None) -> bool:
         now = now or utcnow()

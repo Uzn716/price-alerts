@@ -165,8 +165,9 @@ def test_slickdeals_first_run_seeds_then_alerts(root):
     session = FakeSession([("slickdeals.net", lambda u, p: FakeResponse(200, content=next(feeds)))])
 
     first = SlickdealsSource(c, state, session, NOW).fetch()
-    assert first == []  # seeded silently
+    assert first and all(l.learn_only for l in first)  # old posts: learn prices, never alert
     second = SlickdealsSource(c, state, session, NOW).fetch()
+    assert not any(l.learn_only for l in second)
     ids = {l.item_id for l in second}
     assert ids == {"2", "3", "4"}  # 1 already seen; the second feed also returns the same items
     l4 = [l for l in second if l.item_id == "4"][0]
@@ -212,7 +213,8 @@ def test_dealnews(root):
     state = State()
     feeds = iter([DN_FEED, DN_FEED_2])
     session = FakeSession([("dealnews.com", lambda u, p: FakeResponse(200, content=next(feeds)))])
-    assert DealNewsSource(c, state, session, NOW).fetch() == []  # first run seeds
+    first = DealNewsSource(c, state, session, NOW).fetch()
+    assert first and all(l.learn_only for l in first)  # first run only learns
     listings = DealNewsSource(c, state, session, NOW).fetch()
     assert len(listings) == 1
     l = listings[0]

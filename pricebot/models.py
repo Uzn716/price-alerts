@@ -33,6 +33,7 @@ class Listing:
     part_hint: Part | None = None  # set when the listing came from a direct watch
     error_words: bool = False  # the post itself says "price error" etc.
     alert_all_matches: bool = False  # alert on any new post matching a part
+    note: str | None = None  # extra caution shown in the alert (e.g. marketplace seller info)
 
     @property
     def key(self) -> str:

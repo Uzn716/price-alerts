@@ -147,8 +147,9 @@ def test_price_and_store_extraction():
     assert extract_price("Save $200: Ryzen 7 9800X3D $279") == 279
     assert extract_price("Samsung 990 Pro 4TB $1,099.99") == 1099.99
     assert extract_price("No price here") is None
-    assert extract_store("RTX 5080 $899 at Newegg") == "Newegg"
-    assert extract_store("B&H: Ryzen 9 9950X3D $499") == "B&H"
+    assert extract_store("RTX 5080 $899 at Newegg", "Slickdeals") == "Newegg"
+    assert extract_store("B&H: Ryzen 9 9950X3D $499", "Slickdeals") == "B&H"
+    assert extract_store("RTX 5080 $899", "Slickdeals") == "Slickdeals"
 
 
 def test_slickdeals_first_run_seeds_then_alerts(root):
@@ -183,3 +184,91 @@ def test_slickdeals_partial_failure_is_ok(root):
 
     session = FakeSession([("slickdeals.net", route)])
     assert SlickdealsSource(c, state, session, NOW).fetch() == []
+
+
+# ---------------- DealNews ----------------
+
+DN_FEED = b"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dealnews="https://www.dealnews.com/rss/" xmlns:media="http://search.yahoo.com/mrss/">
+<channel><title>DealNews - Computers</title>
+<item><title>Lenovo Legion 5a Gaming Laptop for $1,249.99 + free shipping</title>
+<link>https://www.dealnews.com/x/22406089.html?iref=rss-c39</link><guid>https://www.dealnews.com/22406089.html?iref=rss-c39</guid>
+<description><![CDATA[<p>Laptop deal</p>]]></description>
+<dealnews:retailer>B&amp;H Photo Video</dealnews:retailer><dealnews:price currency="USD">1249.99</dealnews:price>
+<media:content url="https://img.dealnews.com/a.jpg" medium="image"/></item>
+</channel></rss>"""
+
+DN_FEED_2 = DN_FEED.replace(b"</channel>", b"""<item><title>MSI GeForce RTX 5080 16GB Graphics Card for $579 + free shipping</title>
+<link>https://www.dealnews.com/x/2.html</link><guid>https://www.dealnews.com/2.html</guid>
+<description><![CDATA[<p>Possible price mistake, lowest we've seen</p>]]></description>
+<dealnews:retailer>Newegg</dealnews:retailer><dealnews:price currency="USD">579.00</dealnews:price>
+<media:content url="https://img.dealnews.com/b.jpg" medium="image"/></item></channel>""")
+
+
+def test_dealnews(root):
+    from pricebot.detector import evaluate
+    from pricebot.sources.dealnews import DealNewsSource
+    c = cfg(root)
+    state = State()
+    feeds = iter([DN_FEED, DN_FEED_2])
+    session = FakeSession([("dealnews.com", lambda u, p: FakeResponse(200, content=next(feeds)))])
+    assert DealNewsSource(c, state, session, NOW).fetch() == []  # first run seeds
+    listings = DealNewsSource(c, state, session, NOW).fetch()
+    assert len(listings) == 1
+    l = listings[0]
+    assert (l.price, l.store, l.image_url) == (579.0, "Newegg", "https://img.dealnews.com/b.jpg")
+    assert l.error_words
+    alert = evaluate(l, c.parts, c.settings)
+    assert alert and alert.part.name == "RTX 5080" and "Under your $599 target" in alert.reasons[0]
+
+
+# ---------------- eBay ----------------
+
+def _ebay_item(i, title, price, pct="99.6", score=1500):
+    return {"itemId": f"v1|{i}|0", "title": title, "price": {"value": str(price), "currency": "USD"},
+            "itemWebUrl": f"https://www.ebay.com/itm/{i}", "image": {"imageUrl": f"https://i.ebayimg.com/{i}.jpg"},
+            "seller": {"username": f"seller{i}", "feedbackPercentage": pct, "feedbackScore": score}}
+
+
+def test_ebay(root):
+    from pricebot.detector import evaluate
+    from pricebot.sources.ebay import EbaySource
+    c = cfg(root)
+    c.ebay_client_id, c.ebay_client_secret = "id", "secret"
+    c.parts = [p for p in c.parts if p.name == "RTX 5080"]
+    items = [_ebay_item(i, f"ZOTAC GeForce RTX 5080 16GB Solid #{i}", 1200 + i * 10) for i in range(8)]
+    items += [
+        _ebay_item(100, "PNY GeForce RTX 5080 16GB OC", 700),                       # big drop, good seller
+        _ebay_item(101, "MSI GeForce RTX 5080 16GB", 650, pct="91.0"),              # bad seller -> skipped
+        _ebay_item(102, "RTX 5080 Founders Edition BOX ONLY", 320),                 # trick listing -> skipped
+        _ebay_item(103, "ASUS ROG Strix RTX 5080 Gaming Laptop", 1000),              # laptop -> skipped
+    ]
+    session = FakeSession(
+        [("item_summary/search", FakeResponse(200, {"itemSummaries": items}))],
+        post_routes=[("oauth2/token", FakeResponse(200, {"access_token": "T", "expires_in": 7200}))],
+    )
+    state = State()
+    listings = EbaySource(c, state, session, NOW).fetch()
+    ids = {l.item_id for l in listings}
+    assert "v1|100|0" in ids and "v1|101|0" not in ids and "v1|102|0" not in ids and "v1|103|0" not in ids
+    deal = [l for l in listings if l.item_id == "v1|100|0"][0]
+    assert deal.reference_price == 1225.0  # median of all 10 matching new listings (any seller)
+    alert = evaluate(deal, c.parts, c.settings)
+    assert alert and alert.drop_percent > 40 and "seller100" in deal.note
+    search = [p for u, p in session.calls if "item_summary" in u][0]
+    assert "conditionIds:{1000}" in search["filter"] and "price:[300..]" in search["filter"]
+    # Not due again 5 minutes later (every_minutes: 15)
+    session.calls.clear()
+    assert EbaySource(c, state, session, NOW + timedelta(minutes=5)).fetch() == []
+    assert session.calls == []
+
+
+def test_ebay_bad_keys(root):
+    import pytest
+    from pricebot.http import SourceError
+    from pricebot.sources.ebay import EbaySource
+    c = cfg(root)
+    c.ebay_client_id, c.ebay_client_secret = "id", "wrong"
+    session = FakeSession([], post_routes=[("oauth2/token", FakeResponse(401, {"error": "invalid_client"}))])
+    with pytest.raises(SourceError, match="PRODUCTION"):
+        EbaySource(c, State(), session, NOW).fetch()

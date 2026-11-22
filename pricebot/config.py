@@ -57,9 +57,19 @@ class BestBuyConfig:
 
 
 @dataclass
-class SlickdealsConfig:
+class FeedsConfig:
     enabled: bool = True
     feeds: list[dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass
+class EbayConfig:
+    enabled: bool = True
+    every_minutes: int = 15
+    max_searches_per_run: int = 25
+    min_seller_feedback_percent: float = 98.0
+    min_seller_feedback_score: int = 50
+    min_listings_for_typical: int = 6
 
 
 @dataclass
@@ -68,10 +78,14 @@ class Config:
     parts: list[Part]
     keepa: KeepaConfig
     bestbuy: BestBuyConfig
-    slickdeals: SlickdealsConfig
+    slickdeals: FeedsConfig
+    dealnews: FeedsConfig = field(default_factory=FeedsConfig)
+    ebay: EbayConfig = field(default_factory=EbayConfig)
     discord_webhook_url: str | None = None
     keepa_api_key: str | None = None
     bestbuy_api_key: str | None = None
+    ebay_client_id: str | None = None
+    ebay_client_secret: str | None = None
 
 
 def _num(value: Any, name: str) -> float | None:
@@ -157,20 +171,36 @@ def load_config(path: str | Path) -> Config:
         include_open_box=bool(b.get("include_open_box", False)),
     )
 
-    sd = raw.get("slickdeals") or {}
-    feeds = sd.get("feeds") or []
-    for f in feeds:
-        if not isinstance(f, dict) or not f.get("url"):
-            raise ConfigError("each slickdeals feed needs a 'url'")
-    slickdeals = SlickdealsConfig(enabled=bool(sd.get("enabled", True)), feeds=list(feeds))
+    e = raw.get("ebay") or {}
+    ebay = EbayConfig(
+        enabled=bool(e.get("enabled", True)),
+        every_minutes=int(e.get("every_minutes", 15)),
+        max_searches_per_run=int(e.get("max_searches_per_run", 25)),
+        min_seller_feedback_percent=float(e.get("min_seller_feedback_percent", 98)),
+        min_seller_feedback_score=int(e.get("min_seller_feedback_score", 50)),
+        min_listings_for_typical=int(e.get("min_listings_for_typical", 6)),
+    )
 
     return Config(
         settings=settings,
         parts=parts,
         keepa=keepa,
         bestbuy=bestbuy,
-        slickdeals=slickdeals,
+        slickdeals=_feeds(raw, "slickdeals"),
+        dealnews=_feeds(raw, "dealnews"),
+        ebay=ebay,
         discord_webhook_url=_env("DISCORD_WEBHOOK_URL"),
         keepa_api_key=_env("KEEPA_API_KEY"),
         bestbuy_api_key=_env("BESTBUY_API_KEY"),
+        ebay_client_id=_env("EBAY_CLIENT_ID"),
+        ebay_client_secret=_env("EBAY_CLIENT_SECRET"),
     )
+
+
+def _feeds(raw: dict, section: str) -> FeedsConfig:
+    data = raw.get(section) or {}
+    feeds = data.get("feeds") or []
+    for f in feeds:
+        if not isinstance(f, dict) or not f.get("url"):
+            raise ConfigError(f"each {section} feed needs a 'url'")
+    return FeedsConfig(enabled=bool(data.get("enabled", True)), feeds=list(feeds))

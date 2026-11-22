@@ -156,10 +156,15 @@ One rule: **the price must be at least 30% below the part's normal price**
 * **The typical price the bot has learned:** it records every price it sees for
   each part, from any store or deal site. From the day after it first sees a
   part's price, the median of the last 30 days becomes that part's learned
-  normal price. Nobody has to set
+  normal price. Until then, it uses the part's `starting_price`: today's
+  typical price, researched in November 2026, set for most GPUs and CPUs. Nobody has to set
   target prices by hand. Change this with `learn_window_days` and `learn_min_days`.
 
 Using the lowest number keeps inflated "was $X" prices from causing false alarms.
+
+Broad groups (RAM, SSDs, motherboards, power supplies, monitors, coolers and
+handhelds) need **45%** instead, because a single group mixes cheap and premium
+models. A basic SSD would otherwise look like a "deal" next to a premium one.
 
 A listing also has to match one of your parts and cost at least that part's
 `min_price`, which filters out accessories. PC parts that aren't on your list

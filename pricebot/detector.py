@@ -5,7 +5,8 @@ the part's normal price. "Normal" is the lowest of whatever we know:
   * the store's own reference (Keepa 30/90-day average, Best Buy regular
     price, the typical eBay price right now)
   * the typical price the bot has learned for that part over the last
-    `learn_window_days` days, from every source
+    `learn_window_days` days, from every source (or, until it has learned
+    one, the part's researched `starting_price`)
 Using the lowest keeps inflated "was" prices from causing false alarms.
 An optional per-part `alert_below` price also alerts, if you set one.
 """
@@ -67,6 +68,9 @@ def evaluate(
         refs.append((listing.reference_price, listing.reference_label or "its usual price"))
     if part and learned_typical:
         refs.append((learned_typical, f"its typical price over the last {settings.learn_window_days} days"))
+    elif part and part.starting_price:
+        # Nothing learned yet for this part: use the researched starting price.
+        refs.append((part.starting_price, "its typical price right now (starting estimate)"))
     if refs:
         listing.reference_price, listing.reference_label = min(refs, key=lambda r: r[0])
 

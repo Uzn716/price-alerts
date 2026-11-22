@@ -123,7 +123,9 @@ def send_test(config_path: str) -> int:
     keys = {
         "Keepa (Amazon)": bool(config.keepa_api_key),
         "Best Buy": bool(config.bestbuy_api_key),
+        "eBay": bool(config.ebay_client_id and config.ebay_client_secret),
         "Slickdeals (no key needed)": config.slickdeals.enabled,
+        "DealNews (no key needed)": config.dealnews.enabled,
     }
     status = "\n".join(f"{'✅' if ok else '➖'} {name}" for name, ok in keys.items())
     Discord(config.discord_webhook_url, config.settings.mention).send(

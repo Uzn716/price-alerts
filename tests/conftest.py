@@ -24,8 +24,9 @@ class FakeResponse:
 class FakeSession:
     """Routes requests by URL substring; records everything sent."""
 
-    def __init__(self, routes):
+    def __init__(self, routes, post_routes=None):
         self.routes = routes  # list of (substring, FakeResponse or callable)
+        self.post_routes = post_routes or []
         self.calls = []
         self.posts = []
         self.headers = {}
@@ -37,7 +38,11 @@ class FakeSession:
                 return resp(url, params) if callable(resp) else resp
         raise AssertionError(f"unexpected GET {url}")
 
-    def post(self, url, json=None, params=None, timeout=None):
+    def post(self, url, json=None, params=None, timeout=None, data=None, headers=None):
+        for needle, resp in self.post_routes:
+            if needle in url:
+                self.calls.append((url, data or {}))
+                return resp(url, data) if callable(resp) else resp
         self.posts.append(json)
         return FakeResponse(200, {"id": "1"})
 

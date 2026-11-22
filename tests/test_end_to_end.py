@@ -6,7 +6,7 @@ from conftest import FakeResponse, FakeSession
 
 from pricebot.__main__ import run
 from pricebot.state import State
-from test_sources import _deal, rss
+from test_sources import DN_FEED, _deal, rss
 
 NOW = datetime(2026, 11, 21, 12, 0, tzinfo=timezone.utc)
 
@@ -21,6 +21,7 @@ def make_session(bestbuy_status=200):
         ("api.keepa.com/deal", FakeResponse(200, deals)),
         ("api.bestbuy.com", FakeResponse(bestbuy_status, bb)),
         ("slickdeals.net", FakeResponse(200, content=feed)),
+        ("dealnews.com", FakeResponse(200, content=DN_FEED)),
     ])
 
 

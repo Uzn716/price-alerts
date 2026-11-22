@@ -29,6 +29,8 @@ def alert_embed(alert: Alert) -> dict:
         lines.append(f"**{alert.drop_percent:.0f}% below** {lst.reference_label or 'usual price'}")
     if alert.drop_percent is not None and alert.drop_percent >= 90:
         lines.append("⚠️ Unusually low — double-check the seller, condition and that it's the actual part.")
+    if lst.note:
+        lines.append(lst.note)
 
     fields = [{"name": "Store", "value": lst.store, "inline": True}]
     if alert.part:

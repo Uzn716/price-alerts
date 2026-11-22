@@ -2,7 +2,9 @@ name: Price check
 
 on:
   schedule:
-    - cron: "3-59/10 * * * *"
+    # Every 5 minutes, the fastest GitHub allows (offset from :00, when
+    # GitHub is busiest). Runs may start a few minutes late; that's normal.
+    - cron: "2-59/5 * * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -12,7 +14,7 @@ on:
         default: check
 
 permissions:
-  contents: write
+  contents: write   # only used for the monthly keep-alive commit
 
 concurrency:
   group: price-check
@@ -32,6 +34,8 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      # The bot's memory (alerts already sent, price history) lives in
+      # GitHub's cache between runs, so nothing gets committed every 10 min.
       - name: Restore bot memory
         uses: actions/cache/restore@v5
         with:
@@ -44,6 +48,8 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           KEEPA_API_KEY: ${{ secrets.KEEPA_API_KEY }}
           BESTBUY_API_KEY: ${{ secrets.BESTBUY_API_KEY }}
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
           MODE: ${{ inputs.mode || 'check' }}
         run: |
           case "$MODE" in
@@ -59,6 +65,8 @@ jobs:
           path: data/state.json
           key: price-state-${{ github.run_id }}-${{ github.run_attempt }}
 
+      # GitHub pauses scheduled workflows in repos with no activity for 60 days.
+      # A tiny commit once a month keeps the bot running indefinitely.
       - name: Keep-alive
         if: always()
         run: |

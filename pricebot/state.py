@@ -28,6 +28,7 @@ class State:
         self.seen: dict[str, list[str]] = data.get("seen", {})
         self.keepa: dict[str, Any] = data.get("keepa", {})
         self.errors: dict[str, dict[str, Any]] = data.get("errors", {})
+        self.meta: dict[str, Any] = data.get("meta", {})
 
     # ---- persistence -------------------------------------------------
     @classmethod
@@ -51,6 +52,7 @@ class State:
             "seen": self.seen,
             "keepa": self.keepa,
             "errors": self.errors,
+            "meta": self.meta,
         }
         path.write_text(json.dumps(data, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 

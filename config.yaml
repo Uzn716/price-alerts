@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  PC Price Alerts — your settings and watchlist
 #  Edit this file right on GitHub (pencil icon), then "Commit changes".
-#  The next check (within ~10 minutes) uses your new settings.
+#  The next check (within ~5 minutes) uses your new settings.
 # ─────────────────────────────────────────────────────────────────────────────
 
 settings:
@@ -192,3 +192,18 @@ slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No ke
     - name: Frontpage
       url: https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1
       alert_all_matches: false
+
+dealnews:         # DealNews editors' picks from many stores. No key needed.
+  enabled: true
+  feeds:
+    - name: Computers
+      url: https://www.dealnews.com/c39/Computers/?rss=1
+      alert_all_matches: false
+
+ebay:             # New Buy-It-Now listings on eBay (EBAY_CLIENT_ID + EBAY_CLIENT_SECRET secrets)
+  enabled: true
+  every_minutes: 15              # free accounts get 5,000 searches/day; this uses ~2,000
+  max_searches_per_run: 25
+  # Only alert on sellers with a solid record (cuts down on scams):
+  min_seller_feedback_percent: 98
+  min_seller_feedback_score: 50

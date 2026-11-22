@@ -1,16 +1,18 @@
 # PC Price Alerts
 
 A Discord notifier for **price errors on gaming PC parts**. It runs for free on
-GitHub's servers every 10 minutes, so your own computer never has to stay on.
+GitHub's servers, so your own computer never has to stay on.
+It checks every 5 minutes (the fastest GitHub allows).
 
 | Store | How it's checked | Cost |
 |---|---|---|
 | **Amazon** | Keepa API (price history + deal scanner) | Paid Keepa plan |
-| **Best Buy** | Best Buy's official Products API | Free key |
-| **Newegg, Micro Center, B&H, Walmart, and others** | Slickdeals deal feeds, where shoppers post deals as they find them | Free, no key |
+| **Best Buy** | Best Buy's official Products API | Free key (hard to get) |
+| **eBay** | eBay's official Browse API: new Buy-It-Now listings vs. the typical eBay price | Free developer account |
+| **Newegg, Micro Center, B&H, Walmart, and others** | Slickdeals feeds (shoppers post deals) + DealNews feeds (editors post deals) | Free, no key |
 
 Every source is optional. With **no keys at all**, the bot still watches the
-Slickdeals feeds, so you can start free and add stores later.
+Slickdeals and DealNews feeds, so you can start free and add stores later.
 
 ---
 
@@ -53,6 +55,8 @@ and add each of these:
 | `DISCORD_WEBHOOK_URL` | The webhook URL from step 1 | **Yes** |
 | `KEEPA_API_KEY` | Your Keepa API key (see below) | Only for Amazon |
 | `BESTBUY_API_KEY` | Your Best Buy API key (see below) | Only for Best Buy |
+| `EBAY_CLIENT_ID` | Your eBay App ID (see below) | Only for eBay |
+| `EBAY_CLIENT_SECRET` | Your eBay Cert ID (see below) | Only for eBay |
 
 ### 4. Turn it on and send a test
 1. Open the **Actions** tab. If GitHub asks, click **I understand my workflows, go ahead and enable them**.
@@ -61,7 +65,7 @@ and add each of these:
 3. Within about a minute you should get a test message in Discord that lists
    which stores are connected.
 
-You're done. From now on GitHub runs the check every ~10 minutes on its own.
+You're done. From now on GitHub runs the check every ~5 minutes on its own.
 The very first run quietly remembers what's already in the Slickdeals feeds,
 so you won't get flooded with old posts.
 
@@ -93,6 +97,33 @@ watched listings per run.
    your own domain. The key is free, and the bot uses a tiny fraction of its
    daily limit.
 
+### eBay (free)
+1. Go to <https://developer.ebay.com>, click **Join**, and create a free developer
+   account. Approval can take up to a business day.
+2. Open **Application Keysets** and create a keyset under **Production**
+   (not Sandbox).
+3. Before your Production keys turn on, eBay asks how you handle *Marketplace
+   Account Deletion* notifications. This bot doesn't store any eBay user data,
+   so choose the option to apply for an **exemption** ("I do not persist eBay data").
+4. Copy the **App ID (Client ID)** into a secret named `EBAY_CLIENT_ID`, and the
+   **Cert ID (Client Secret)** into a secret named `EBAY_CLIENT_SECRET`.
+
+The bot only alerts on eBay listings that are **new, Buy It Now, shipped from the
+US**, from sellers with **98%+ positive feedback and 50+ ratings**. It also skips
+common tricks like "box only" or "read description". Even so, a GPU far
+under market price on eBay is a red flag, so always read the listing and pay
+with eBay's checkout, which gives you its Money Back Guarantee.
+
+---
+
+## Updating the bot to a new version
+1. Download and unzip the new `pc-price-alerts.zip`.
+2. In your repo, click **Add file → Upload files**, drag in everything from the
+   folder (including `.github`), and click **Commit changes**. Files with the
+   same name get replaced.
+3. If you had edited `config.yaml`, the upload replaces it too. Re-apply your
+   changes, or leave `config.yaml` out of the upload.
+
 ---
 
 ## Customizing (`config.yaml`)
@@ -123,10 +154,11 @@ meet at least one of these:
 * **Far below its normal price.** For Amazon, "normal" is the lower of Keepa's
   30-day and 90-day averages. For Best Buy, it's the lower of Best Buy's
   "regular price" and the bot's own record of what that item usually sells for.
+  For eBay, it's the median price of all new listings for that part.
   Using the lower number avoids false alarms from inflated "was" prices.
 * **Under your `alert_below` price.**
-* **Called a price error.** A Slickdeals post that says "price error",
-  "price mistake", "glitch", or similar.
+* **Called a price error.** A Slickdeals or DealNews post that says
+  "price error", "price mistake", "glitch", or similar.
 
 Each listing alerts once. It alerts again only if the price drops another 5%,
 or after `realert_after_hours`.
@@ -153,7 +185,7 @@ or after `realert_after_hours`.
 
 * Retailers often cancel orders placed at error prices. Treat alerts as a
   chance at a deal, not a guarantee.
-* Errors can disappear within minutes, and with checks every ~10 minutes a few
+* Errors can disappear within minutes, and with checks every ~5 minutes a few
   will slip past.
 * Amazon alerts default to items **sold by Amazon itself**. Errors there are
   the most likely to be honored, and you avoid fake third-party "deals". Set

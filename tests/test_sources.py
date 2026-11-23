@@ -154,6 +154,7 @@ def test_price_and_store_extraction():
 
 def test_slickdeals_first_run_seeds_then_alerts(root):
     c = cfg(root)
+    c.slickdeals.feeds = c.slickdeals.feeds[:2]
     old = [{"id": "1", "title": "RTX 5090 $999 at Newegg", "body": ""}]
     new = old + [
         {"id": "2", "title": "Gigabyte RTX 5080 $549 at Micro Center", "body": ""},
@@ -210,6 +211,7 @@ def test_dealnews(root):
     from pricebot.detector import evaluate
     from pricebot.sources.dealnews import DealNewsSource
     c = cfg(root)
+    c.dealnews.feeds = c.dealnews.feeds[:1]
     state = State()
     feeds = iter([DN_FEED, DN_FEED_2])
     session = FakeSession([("dealnews.com", lambda u, p: FakeResponse(200, content=next(feeds)))])

@@ -7,12 +7,13 @@ from __future__ import annotations
 import argparse
 import sys
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .config import ConfigError, load_config
 from .detector import evaluate, price_floor, resolve_part
 from .http import SourceError, make_session
 from .models import Alert, Listing, Part
-from .notify import GREY, Discord, alert_embed, info_embed
+from .notify import BLUE, GREY, Discord, alert_embed, info_embed
 from .sources import ALL_SOURCES
 from .state import State
 
@@ -35,6 +36,7 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
     state = State.load(state_path)
     discord = None if dry_run else Discord(config.discord_webhook_url, config.settings.mention, session)
 
+    run_stats = {"checked": 0, "matched": 0}
     alerts: list[Alert] = []
     alerted_keys: set[str] = set()  # the same post can appear in two feeds in one run
     warnings: list[dict] = []
@@ -64,10 +66,12 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
             continue
         state.record_success(source.name)
 
-        found = learned = 0
+        found = learned = matched = 0
         st = config.settings
         for listing in listings:
             part = resolve_part(listing, config.parts, st)
+            if part and not listing.learn_only:
+                matched += 1
             low_key = f"prices:{part.name}" if part else None
             typical = (
                 state.typical_price(low_key, now, min_days=st.learn_min_days, days=st.learn_window_days)
@@ -87,7 +91,10 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
             if part and listing.price is not None and listing.price >= price_floor(part, st):
                 state.record_price(low_key, listing.price, now)
                 learned += 1
-        print(f"- {source.name}: checked {len(listings)} listings, {found} alert(s), learned {learned} price(s)")
+        print(f"- {source.name}: checked {len(listings)} listings, {matched} matched your parts, "
+              f"{found} alert(s), learned {learned} price(s)")
+        run_stats["checked"] += sum(1 for l in listings if not l.learn_only)
+        run_stats["matched"] += matched
 
     for alert in alerts:
         lst = alert.listing
@@ -98,10 +105,14 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
         print("Dry run: nothing sent to Discord and state not saved.")
         return 0
 
+    summary = _update_daily_summary(state, config, now, run_stats, len(alerts))
     try:
         if warnings:
             discord.send(warnings)
         discord.send_alerts(alerts)
+        if summary:
+            discord.send([summary])
+            state.meta["summary"] = {"last_sent": _local_now(config, now).date().isoformat(), "since": now.isoformat()}
     except Exception as exc:
         print(f"Couldn't post to Discord: {exc}")
         state.save(state_path, now)  # keep progress; alerts will retry next run
@@ -111,6 +122,45 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
         state.mark_alerted(alert.listing.key, alert.listing.price, now)
     state.save(state_path, now)
     return 0
+
+
+def _local_now(config, now: datetime) -> datetime:
+    try:
+        return now.astimezone(ZoneInfo(config.settings.timezone))
+    except (ZoneInfoNotFoundError, ValueError):
+        return now
+
+
+def _update_daily_summary(state: State, config, now: datetime, run_stats: dict, alerts: int) -> dict | None:
+    """Add this run to today's tally; return a summary embed once a day."""
+    s = state.meta.setdefault("summary", {})
+    for k in ("runs", "checked", "matched", "alerts"):
+        s.setdefault(k, 0)
+    s.setdefault("since", now.isoformat())
+    s["runs"] += 1
+    s["checked"] += run_stats["checked"]
+    s["matched"] += run_stats["matched"]
+    s["alerts"] += alerts
+
+    st = config.settings
+    local = _local_now(config, now)
+    if not st.daily_summary or local.hour < st.daily_summary_hour or s.get("last_sent") == local.date().isoformat():
+        return None
+
+    ready = sum(
+        1 for p in config.parts
+        if p.starting_price or state.typical_price(f"prices:{p.name}", now, st.learn_min_days, st.learn_window_days)
+    )
+    problems = [f"⚠️ {name}: {e.get('last_error', 'failing')[:120]}" for name, e in state.errors.items()]
+    lines = [
+        f"**{s['runs']}** checks • **{s['checked']:,}** new listings/posts read",
+        f"**{s['matched']}** matched your parts • **{s['alerts']}** alert(s) sent",
+        f"**{ready}/{len(config.parts)}** parts have a normal price to compare against",
+    ]
+    lines += problems or ["✅ All sources working"]
+    if s["alerts"] == 0:
+        lines.append(f"\nNo deals hit {st.min_drop_percent:g}%+ below normal yet. That's expected: deals that deep are rare.")
+    return info_embed("📊 Daily check-in: the bot is running", "\n".join(lines), BLUE)
 
 
 def send_test(config_path: str) -> int:

@@ -29,6 +29,12 @@ settings:
   # (unless the price drops another 5% or more).
   realert_after_hours: 24
 
+  # Once a day, post a short "still alive" summary of what the bot checked,
+  # so a quiet day never looks like a broken bot. Hour is in your timezone.
+  daily_summary: true
+  daily_summary_hour: 9
+  timezone: America/New_York
+
   # Who to ping. Leave "" for no ping. Use "@here", or "<@YOUR_USER_ID>"
   # to ping just you (README explains how to find your user ID).
   mention: ""
@@ -538,20 +544,35 @@ bestbuy:          # Best Buy, via a free API key (BESTBUY_API_KEY secret)
 slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No key.
   enabled: true
   feeds:
+    # General deal lists
     - name: Hot Deals
       url: https://slickdeals.net/newsearch.php?searchin=first&forumchoice%5B%5D=9&rss=1
-      # true = alert on EVERY new post matching a part above, not just price errors
-      alert_all_matches: false
     - name: Frontpage
       url: https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1
-      alert_all_matches: false
+    # Searches for PC parts across all of Slickdeals
+    - name: Search RTX
+      url: https://slickdeals.net/newsearch.php?q=rtx&searcharea=deals&searchin=first&rss=1
+    - name: Search Radeon
+      url: https://slickdeals.net/newsearch.php?q=radeon&searcharea=deals&searchin=first&rss=1
+    - name: Search Ryzen
+      url: https://slickdeals.net/newsearch.php?q=ryzen&searcharea=deals&searchin=first&rss=1
+    - name: Search Intel Core
+      url: https://slickdeals.net/newsearch.php?q=intel+core&searcharea=deals&searchin=first&rss=1
+    - name: Search DDR5
+      url: https://slickdeals.net/newsearch.php?q=ddr5&searcharea=deals&searchin=first&rss=1
+    - name: Search NVMe
+      url: https://slickdeals.net/newsearch.php?q=nvme&searcharea=deals&searchin=first&rss=1
+    - name: Search Motherboard
+      url: https://slickdeals.net/newsearch.php?q=motherboard&searcharea=deals&searchin=first&rss=1
+    # Add  alert_all_matches: true  under a feed to hear about EVERY new post
+    # matching one of your parts, not just 30%+ deals.
 
 dealnews:         # DealNews editors' picks from many stores. No key needed.
   enabled: true
   feeds:
-    - name: Computers
-      url: https://www.dealnews.com/c39/Computers/?rss=1
-      alert_all_matches: false
+    # PC parts: graphics cards, CPUs, RAM, storage, motherboards, PSUs, coolers
+    - name: Components
+      url: https://www.dealnews.com/c93/Computers/Upgrades-Components/?rss=1
 
 ebay:             # New Buy-It-Now listings on eBay (EBAY_CLIENT_ID + EBAY_CLIENT_SECRET secrets)
   enabled: true

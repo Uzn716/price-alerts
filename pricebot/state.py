@@ -91,6 +91,13 @@ class State:
             return None
         return statistics.median(values)
 
+    def days_of_data(self, key: str, now: datetime | None = None, days: int = 30) -> int:
+        """How many days (excluding today) of prices we have in the window."""
+        now = now or utcnow()
+        today = now.date().isoformat()
+        cutoff = (now - timedelta(days=days)).date().isoformat()
+        return sum(1 for d in self.history.get(key, {}) if d != today and d >= cutoff)
+
     # ---- alert de-duplication -----------------------------------------
     def should_alert(self, key: str, price: float | None, realert_hours: float, now: datetime | None = None) -> bool:
         now = now or utcnow()

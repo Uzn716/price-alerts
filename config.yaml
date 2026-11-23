@@ -9,7 +9,7 @@ settings:
   # normal price. "Normal" = the lowest of the store's own usual price and the
   # typical price the bot has learned for that part (see learn_* below).
   # Each part can override it with its own min_drop_percent.
-  min_drop_percent: 30
+  min_drop_percent: 20
 
   # Stricter bar for PC parts that AREN'T in your list but match
   # general_keywords (so you still hear about a random 60%-off motherboard).
@@ -92,7 +92,7 @@ settings:
 #                  Only used until the bot has learned its own normal price
 #                  for that part (usually from the next day on).
 #    alert_below:  OPTIONAL. Also alert whenever the price is under this,
-#                  even if it isn't 30% off. Not needed: none are set below.
+#                  even if it isn't 20% off. Not needed: none are set below.
 #    amazon:       optional Amazon links/ASINs to watch directly (needs Keepa).
 #    min_drop_percent / min_price: optional per-part overrides.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -601,7 +601,7 @@ slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No ke
       url: https://slickdeals.net/newsearch.php?q=handheld&searcharea=deals&searchin=first&rss=1
       every_minutes: 15
     # Add  alert_all_matches: true  under a feed to hear about EVERY new post
-    # matching one of your parts, not just 30%+ deals.
+    # matching one of your parts, not just 20%+ deals.
 
 dealnews:         # DealNews editors' picks from many stores. No key needed.
   enabled: true

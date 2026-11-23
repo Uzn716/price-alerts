@@ -1,6 +1,6 @@
 """Decides whether a listing is a big enough deal to alert on.
 
-One rule: the price must be at least `min_drop_percent` (default 30%) below
+One rule: the price must be at least `min_drop_percent` (20% in config.yaml) below
 the part's normal price. "Normal" is the lowest of whatever we know:
   * the store's own reference (Keepa 30/90-day average, Best Buy regular
     price, the typical eBay price right now)
@@ -69,9 +69,10 @@ def evaluate(
         label = listing.reference_label or "its usual price"
         refs.append((listing.reference_price, label, f"{listing.store}: {label}"))
     if part and learned_typical:
-        days = f"{learned_days} day{'s' if learned_days != 1 else ''}" if learned_days else "recent"
+        source = (f"{learned_days} day{'s' if learned_days != 1 else ''} of prices" if learned_days
+                  else "recent prices")
         refs.append((learned_typical, f"its typical price over the last {settings.learn_window_days} days",
-                     f"learned from {days} of prices across all stores"))
+                     f"learned from {source} across all stores"))
     elif part and part.starting_price:
         # Nothing learned yet for this part: use the researched starting price.
         refs.append((part.starting_price, "its typical price right now (starting estimate)",

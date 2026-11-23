@@ -147,7 +147,7 @@ change. Things you'll most likely want to change:
 
 ## How it decides something is worth an alert
 
-One rule: **the price must be at least 30% below the part's normal price**
+One rule: **the price must be at least 20% below the part's normal price**
 (`min_drop_percent` in `config.yaml`).
 
 "Normal" is the lowest of whatever the bot knows:
@@ -172,7 +172,7 @@ need a stricter 50% (`general_min_drop_percent`).
 
 If you want, you can give a part an `alert_below` price to also get alerts
 under that price. None are set by default. A post that calls itself a
-"price error" doesn't alert by itself; it still has to be 30% below normal.
+"price error" doesn't alert by itself; it still has to be 20% below normal.
 
 Each listing alerts once. It alerts again only if the price drops another 5%,
 or after `realert_after_hours`.

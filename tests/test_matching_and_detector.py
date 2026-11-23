@@ -50,12 +50,14 @@ def _listing(title, price, ref=None, **kw):
 def test_detector_rules(root):
     cfg = load_config(root / "config.yaml")
     ps, st = cfg.parts, cfg.settings
-    assert st.min_drop_percent == 30
+    assert st.min_drop_percent == 20
 
     # Normal price: no alert
     assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 999, 1049), ps, st) is None
-    # 25% off is a nice sale, but under the 30% bar: no alert
-    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 785, 1049), ps, st) is None
+    # 15% off is a nice sale, but under the 20% bar: no alert
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 890, 1049), ps, st) is None
+    # 25% off clears the 20% bar: alert
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 785, 1049), ps, st) is not None
     # 41% below the usual price: alert
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 620, 1049), ps, st)
     assert a and a.reasons == ["41% below avg"]
@@ -66,9 +68,9 @@ def test_detector_rules(root):
     # Starting price is used until the bot has learned one ($1,699 for an RTX 5080)
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 1099, None), ps, st)
     assert a and a.reasons == ["35% below its typical price right now (starting estimate)"]
-    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1299, None), ps, st) is None  # only 24% off
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1399, None), ps, st) is None  # only 18% off
     # Once a learned price exists, it replaces the starting price
-    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1099, None), ps, st, learned_typical=1400) is None
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 1150, None), ps, st, learned_typical=1400) is None
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 899, None), ps, st, learned_typical=1400)
     assert a and "36% below its typical price over the last 30 days" in a.reasons[0]
     # Broad groups (RAM, SSDs, monitors...) need 45%, since models vary a lot in price
@@ -81,7 +83,7 @@ def test_detector_rules(root):
     a = evaluate(_listing("PNY GeForce RTX 5080 16GB", 600, 1200), ps, st, learned_typical=950)
     assert a and "37% below its typical price over the last 30 days" in a.reasons[0]
     assert a.listing.reference_price == 950
-    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 700, 1200), ps, st, learned_typical=950) is None
+    assert evaluate(_listing("PNY GeForce RTX 5080 16GB", 800, 1200), ps, st, learned_typical=950) is None
     # Accessory under the part's min_price is ignored
     assert evaluate(_listing("RTX 5080 GPU anti-sag holder", 19, 40), ps, st) is None
     # Laptop excluded even though cheap

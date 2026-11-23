@@ -35,6 +35,10 @@ settings:
   daily_summary_hour: 9
   timezone: America/New_York
 
+  # Each alert shows quick resale math: rough profit if you resold at the
+  # normal price minus this % in marketplace/payment fees (eBay is ~13%).
+  resale_fee_percent: 13
+
   # Who to ping. Leave "" for no ping. Use "@here", or "<@YOUR_USER_ID>"
   # to ping just you (README explains how to find your user ID).
   mention: ""
@@ -549,21 +553,53 @@ slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No ke
       url: https://slickdeals.net/newsearch.php?searchin=first&forumchoice%5B%5D=9&rss=1
     - name: Frontpage
       url: https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1
-    # Searches for PC parts across all of Slickdeals
+    # Searches for PC parts across all of Slickdeals (each refreshed every 15 min;
+    # a search keeps its latest 25 posts, so nothing is missed in between)
     - name: Search RTX
       url: https://slickdeals.net/newsearch.php?q=rtx&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search GeForce
+      url: https://slickdeals.net/newsearch.php?q=geforce&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search Radeon
       url: https://slickdeals.net/newsearch.php?q=radeon&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Graphics Card
+      url: https://slickdeals.net/newsearch.php?q=graphics+card&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search Ryzen
       url: https://slickdeals.net/newsearch.php?q=ryzen&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search Intel Core
       url: https://slickdeals.net/newsearch.php?q=intel+core&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search DDR5
       url: https://slickdeals.net/newsearch.php?q=ddr5&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search DDR4
+      url: https://slickdeals.net/newsearch.php?q=ddr4&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search NVMe
       url: https://slickdeals.net/newsearch.php?q=nvme&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search SSD
+      url: https://slickdeals.net/newsearch.php?q=ssd&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     - name: Search Motherboard
       url: https://slickdeals.net/newsearch.php?q=motherboard&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Power Supply
+      url: https://slickdeals.net/newsearch.php?q=power+supply&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming Monitor
+      url: https://slickdeals.net/newsearch.php?q=gaming+monitor&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search AIO Cooler
+      url: https://slickdeals.net/newsearch.php?q=aio&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Handheld
+      url: https://slickdeals.net/newsearch.php?q=handheld&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
     # Add  alert_all_matches: true  under a feed to hear about EVERY new post
     # matching one of your parts, not just 30%+ deals.
 

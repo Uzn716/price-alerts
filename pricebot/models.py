@@ -48,3 +48,4 @@ class Alert:
     part: Part | None
     reasons: list[str]
     drop_percent: float | None
+    basis: str = ""  # where the "normal price" came from, shown in the alert

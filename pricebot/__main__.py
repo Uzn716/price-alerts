@@ -34,7 +34,8 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
 
     session = session or make_session()
     state = State.load(state_path)
-    discord = None if dry_run else Discord(config.discord_webhook_url, config.settings.mention, session)
+    discord = None if dry_run else Discord(config.discord_webhook_url, config.settings.mention, session,
+                                             config.settings.resale_fee_percent)
 
     run_stats = {"checked": 0, "matched": 0}
     alerts: list[Alert] = []
@@ -78,7 +79,8 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
                 if part else None
             )
             if not listing.learn_only:
-                alert = evaluate(listing, config.parts, st, learned_typical=typical, part=part)
+                days = state.days_of_data(low_key, now, st.learn_window_days) if part else 0
+                alert = evaluate(listing, config.parts, st, learned_typical=typical, part=part, learned_days=days)
                 if (
                     alert
                     and listing.key not in alerted_keys

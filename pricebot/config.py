@@ -39,6 +39,7 @@ class Settings:
     learn_window_days: int = 30
     learn_min_days: int = 1
     mention: str = ""
+    resale_fee_percent: float = 13
     daily_summary: bool = True
     daily_summary_hour: int = 9
     timezone: str = "America/New_York"
@@ -155,6 +156,7 @@ def load_config(path: str | Path) -> Config:
         learn_window_days=int(_num(s.get("learn_window_days"), "learn_window_days") or 30),
         learn_min_days=int(_num(s.get("learn_min_days"), "learn_min_days") or 1),
         mention=str(s.get("mention") or ""),
+        resale_fee_percent=_num(s.get("resale_fee_percent"), "resale_fee_percent") if s.get("resale_fee_percent") is not None else 13,
         daily_summary=bool(s.get("daily_summary", True)),
         daily_summary_hour=int(_num(s.get("daily_summary_hour"), "daily_summary_hour") or 9) % 24,
         timezone=str(s.get("timezone") or "America/New_York"),

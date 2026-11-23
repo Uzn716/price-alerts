@@ -46,6 +46,7 @@ def evaluate(
     settings: Settings,
     learned_typical: float | None = None,
     part=UNSET,
+    learned_days: int = 0,
 ) -> Alert | None:
     tokens = tokenize(listing.title)
     if part is UNSET:
@@ -63,16 +64,21 @@ def evaluate(
     # Pick the lowest known "normal" price as the reference (on a copy, so the
     # original listing is left untouched).
     listing = replace(listing)
-    refs = []
+    refs = []  # (price, label, where it came from)
     if listing.reference_price:
-        refs.append((listing.reference_price, listing.reference_label or "its usual price"))
+        label = listing.reference_label or "its usual price"
+        refs.append((listing.reference_price, label, f"{listing.store}: {label}"))
     if part and learned_typical:
-        refs.append((learned_typical, f"its typical price over the last {settings.learn_window_days} days"))
+        days = f"{learned_days} day{'s' if learned_days != 1 else ''}" if learned_days else "recent"
+        refs.append((learned_typical, f"its typical price over the last {settings.learn_window_days} days",
+                     f"learned from {days} of prices across all stores"))
     elif part and part.starting_price:
         # Nothing learned yet for this part: use the researched starting price.
-        refs.append((part.starting_price, "its typical price right now (starting estimate)"))
+        refs.append((part.starting_price, "its typical price right now (starting estimate)",
+                     "researched starting estimate (Nov 2026), replaced once the bot learns prices"))
+    basis = ""
     if refs:
-        listing.reference_price, listing.reference_label = min(refs, key=lambda r: r[0])
+        listing.reference_price, listing.reference_label, basis = min(refs, key=lambda r: r[0])
 
     reasons: list[str] = []
     drop = drop_percent(price, listing.reference_price)
@@ -93,4 +99,4 @@ def evaluate(
         return None
     if listing.error_words:
         reasons.append("The post also calls it a possible price error")
-    return Alert(listing=listing, part=part, reasons=reasons, drop_percent=drop)
+    return Alert(listing=listing, part=part, reasons=reasons, drop_percent=drop, basis=basis)

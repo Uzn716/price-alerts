@@ -10,14 +10,14 @@ from __future__ import annotations
 import html
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
 from ..config import Config, FeedsConfig
 from ..http import TIMEOUT, SourceError
 from ..models import Listing
-from ..state import State
+from ..state import State, _parse_time
 
 _PRICE_RE = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+|\d+)(\.\d{1,2})?")
 ERROR_RE = re.compile(
@@ -97,17 +97,29 @@ class FeedSource:
     def fetch(self) -> list[Listing]:
         listings: list[Listing] = []
         failures = []
-        feeds = self.feeds_config.feeds
-        for feed in feeds:
+        due = [f for f in self.feeds_config.feeds if self._due(f)]
+        for feed in due:
             try:
                 listings.extend(self._fetch_feed(feed))
             except SourceError as exc:
                 failures.append(f"{feed.get('name', feed['url'])}: {exc}")
-        if failures and len(failures) == len(feeds):
+        if failures and len(failures) == len(due):
             raise SourceError("; ".join(failures))
         for f in failures:
             print(f"  {self.name} warning: {f}")
         return listings
+
+    def _due(self, feed: dict) -> bool:
+        """Feeds can set every_minutes to be checked less often than every run."""
+        every = int(feed.get("every_minutes") or 0)
+        if every <= 0:
+            return True
+        key = f"{self.name}:{feed.get('name') or feed['url']}"
+        last = self.state.meta.setdefault("feed_last", {}).get(key)
+        if last and self.now - _parse_time(last) < timedelta(minutes=every - 1):
+            return False
+        self.state.meta["feed_last"][key] = self.now.isoformat()
+        return True
 
     def _fetch_feed(self, feed: dict) -> list[Listing]:
         url = str(feed["url"])

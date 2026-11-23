@@ -17,7 +17,23 @@ def _clip(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
-def alert_embed(alert: Alert) -> dict:
+def resale_lines(alert: Alert, fee_percent: float) -> list[str]:
+    """Quick flip math: what you'd pay vs. the normal price, and rough profit after fees."""
+    lst = alert.listing
+    if lst.price is None or not lst.reference_price or lst.reference_price <= lst.price:
+        return []
+    normal, price = lst.reference_price, lst.price
+    lines = [f"Normal **${normal:,.2f}** → you pay **${price:,.2f}** (**${normal - price:,.2f}** under)"]
+    if fee_percent > 0:
+        profit = normal * (1 - fee_percent / 100) - price
+        word = "profit" if profit >= 0 else "loss"
+        lines.append(f"Resold at normal price minus ~{fee_percent:g}% fees: ≈ **${profit:,.0f}** {word}")
+    if alert.basis:
+        lines.append(f"Normal price based on: {alert.basis}")
+    return lines
+
+
+def alert_embed(alert: Alert, fee_percent: float = 13) -> dict:
     lst = alert.listing
     lines = []
     if lst.price is not None:
@@ -35,6 +51,9 @@ def alert_embed(alert: Alert) -> dict:
     fields = [{"name": "Store", "value": lst.store, "inline": True}]
     if alert.part:
         fields.append({"name": "Tracking", "value": alert.part.name, "inline": True})
+    flip = resale_lines(alert, fee_percent)
+    if flip:
+        fields.append({"name": "💰 Resale math (estimate)", "value": _clip("\n".join(flip), 1024)})
     fields.append({"name": "Why you're seeing this", "value": _clip("\n".join(f"• {r}" for r in alert.reasons), 1024)})
 
     big = (alert.drop_percent or 0) >= 50 or lst.error_words
@@ -57,10 +76,12 @@ def info_embed(title: str, description: str, color: int = BLUE) -> dict:
 
 
 class Discord:
-    def __init__(self, webhook_url: str, mention: str = "", session: requests.Session | None = None):
+    def __init__(self, webhook_url: str, mention: str = "", session: requests.Session | None = None,
+                 fee_percent: float = 13):
         self.url = webhook_url
         self.mention = mention.strip()
         self.session = session or requests.Session()
+        self.fee_percent = fee_percent
 
     def send(self, embeds: list[dict], content: str = "") -> None:
         for i in range(0, len(embeds), MAX_EMBEDS_PER_MESSAGE):
@@ -79,7 +100,7 @@ class Discord:
             return
         noun = "possible price error" if len(alerts) == 1 else f"{len(alerts)} possible price errors"
         content = f"{self.mention} 🚨 {noun}".strip()
-        self.send([alert_embed(a) for a in alerts], content)
+        self.send([alert_embed(a, self.fee_percent) for a in alerts], content)
 
     def _post(self, payload: dict) -> None:
         for attempt in range(4):

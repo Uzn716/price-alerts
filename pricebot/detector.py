@@ -36,7 +36,10 @@ def resolve_part(listing: Listing, parts: list[Part], settings: Settings) -> Par
         return None
     # Prebuilt PCs only match prebuilt entries, so a "$1,300 gaming desktop with an
     # RTX 5070" never counts as an RTX 5070 graphics card.
-    return match_part(listing.title, parts, prebuilt=settings.title_is_prebuilt(tokens))
+    prebuilt = settings.title_is_prebuilt(tokens)
+    if prebuilt and any_phrase_in(tokens, settings.prebuilt_exclude):
+        return None  # e.g. DDR4 / AM4 prebuilts you don't want at all
+    return match_part(listing.title, parts, prebuilt=prebuilt)
 
 
 def price_floor(part: Part | None, settings: Settings) -> float:
@@ -56,7 +59,10 @@ def evaluate(
     tokens = tokenize(listing.title)
     if part is UNSET:
         part = resolve_part(listing, parts, settings)
-    if part is None and listing.part_hint is None and any_phrase_in(tokens, settings.exclude):
+    if part is None and listing.part_hint is None and (
+        any_phrase_in(tokens, settings.exclude)
+        or (settings.title_is_prebuilt(tokens) and any_phrase_in(tokens, settings.prebuilt_exclude))
+    ):
         return None
     is_general = part is None and any_phrase_in(tokens, settings.general_keywords)
     if part is None and not is_general:
@@ -104,8 +110,18 @@ def evaluate(
         gpu_name = part.gpu or "graphics card"
         notes.append(f"🔧 The {gpu_name} alone is normally ~${gpu_normal:,.0f}: this whole PC costs "
                      f"{ratio:.2f}× that")
-        if settings.prebuilt_partout_ratio > 0 and ratio <= settings.prebuilt_partout_ratio:
-            reasons.append(f"Costs only {ratio:.2f}× the {gpu_name} inside it (good part-out value)")
+        # Part-out alert: cheap relative to its GPU AND below what PCs like it normally
+        # cost (so a group where every PC is cheap vs. an overpriced GPU doesn't fire nonstop).
+        below_own_normal = drop_percent(price, learned_typical) if learned_typical else None
+        if (
+            settings.prebuilt_partout_ratio > 0
+            and ratio <= settings.prebuilt_partout_ratio
+            and below_own_normal is not None
+            and below_own_normal >= settings.prebuilt_partout_min_drop
+            and not reasons
+        ):
+            reasons.append(f"Costs only {ratio:.2f}× the {gpu_name} inside it, and {below_own_normal:.0f}% "
+                           f"below what PCs like it normally cost (good part-out value)")
 
     if listing.alert_all_matches and part and not reasons:
         reasons.append(f"New deal post for {part.name}")

@@ -49,6 +49,8 @@ class Settings:
     prebuilt_words: list[str] = field(default_factory=list)
     component_words: list[str] = field(default_factory=list)
     prebuilt_partout_ratio: float = 0  # 0 = off
+    prebuilt_partout_min_drop: float = 10
+    prebuilt_exclude: list[str] = field(default_factory=list)
 
     def title_is_prebuilt(self, tokens: list[str]) -> bool:
         from .matching import is_prebuilt
@@ -176,6 +178,9 @@ def load_config(path: str | Path) -> Config:
         prebuilt_words=_str_list(s.get("prebuilt_words"), "prebuilt_words"),
         component_words=_str_list(s.get("component_words"), "component_words"),
         prebuilt_partout_ratio=_num(s.get("prebuilt_partout_ratio"), "prebuilt_partout_ratio") or 0,
+        prebuilt_partout_min_drop=(_num(s.get("prebuilt_partout_min_drop"), "prebuilt_partout_min_drop")
+                                   if s.get("prebuilt_partout_min_drop") is not None else 10),
+        prebuilt_exclude=_str_list(s.get("prebuilt_exclude"), "prebuilt_exclude"),
     )
 
     parts = [_parse_part(p, i) for i, p in enumerate(raw.get("parts") or [])]

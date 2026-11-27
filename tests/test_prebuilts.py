@@ -38,20 +38,52 @@ def test_prebuilt_classification(root, title, expected):
     assert (part.name if part else None) == expected
 
 
-def test_prebuilt_alert_shows_gpu_value_and_optional_partout(root):
+def test_prebuilt_alert_shows_gpu_value_and_partout_rule(root):
     c = load_config(root / "config.yaml")
-    title = "CyberPowerPC Gamer Xtreme RTX 5080 16GB Ryzen 7 9800X3D 32GB"
+    assert c.settings.prebuilt_partout_ratio == 1.3 and c.settings.prebuilt_partout_min_drop == 10
+    title = "CyberPowerPC Gamer Xtreme RTX 5080 16GB Ryzen 7 9800X3D 32GB DDR5"
     # 40% under the prebuilt's learned normal price -> alert, with GPU value note
     a = evaluate(L(title, 1500), c.parts, c.settings, learned_typical=2500, gpu_normal=1699)
     assert a and a.part.name == "Prebuilt PC: RTX 5080"
     flip = next(f["value"] for f in alert_embed(a)["fields"] if f["name"].startswith("💰"))
     assert "The RTX 5080 alone is normally ~$1,699: this whole PC costs 0.88× that" in flip
-    # Only 20% under: prebuilts need 35%, so no alert by default...
-    assert evaluate(L(title, 2000), c.parts, c.settings, learned_typical=2500, gpu_normal=1699) is None
-    # ...unless the part-out rule is switched on and the PC costs <= 1.2x its GPU
-    st = replace(c.settings, prebuilt_partout_ratio=1.2)
-    a = evaluate(L(title, 2000), c.parts, st, learned_typical=2500, gpu_normal=1699)
-    assert a and "Costs only 1.18× the RTX 5080 inside it" in a.reasons[0]
+    # Part-out rule: 1.18x its GPU and 15% under PCs like it -> alert
+    a = evaluate(L(title, 2000), c.parts, c.settings, learned_typical=2350, gpu_normal=1699)
+    assert a and a.reasons[0].startswith("Costs only 1.18× the RTX 5080 inside it, and 15% below")
+    # 1.18x its GPU but at the normal price for PCs like it -> no alert (anti-spam rule)
+    assert evaluate(L(title, 2000), c.parts, c.settings, learned_typical=2050, gpu_normal=1699) is None
+    # 1.41x its GPU -> too pricey for a part-out alert, and only 15% off -> no alert
+    assert evaluate(L(title, 2400), c.parts, c.settings, learned_typical=2820, gpu_normal=1699) is None
+    # Ratio rule switched off -> only the normal 35% rule applies
+    st = replace(c.settings, prebuilt_partout_ratio=0)
+    assert evaluate(L(title, 2000), c.parts, st, learned_typical=2350, gpu_normal=1699) is None
+
+
+def test_rtx_5090_pcs_dont_fire_nonstop(root):
+    """The 5090 card is so overpriced that almost every 5090 PC costs less than it.
+    Without the 'below its own normal' rule, every 5090 PC would alert."""
+    c = load_config(root / "config.yaml")
+    title = "iBUYPOWER Y70 Gaming Desktop RTX 5090 Ryzen 9 9950X3D 64GB DDR5"
+    assert evaluate(L(title, 4800), c.parts, c.settings, learned_typical=4900, gpu_normal=6000) is None
+
+
+@pytest.mark.parametrize("title", [
+    "Skytech Shadow Gaming PC – AMD Ryzen 7 5700X, RTX 5070 12GB, 16GB DDR4, 1TB NVMe",
+    "CyberPowerPC Gamer Xtreme – Ryzen 5 5600, GeForce RTX 5070, 16GB RAM",
+    "iBUYPOWER Gaming Desktop Ryzen 7 5800X3D RTX 5070 Ti B550",
+])
+def test_am4_ddr4_prebuilts_are_ignored(root, title):
+    c = load_config(root / "config.yaml")
+    assert resolve_part(L(title), c.parts, c.settings) is None
+    assert evaluate(L(title, 400), c.parts, c.settings, learned_typical=1500) is None
+
+
+def test_am4_filter_only_affects_prebuilts(root):
+    c = load_config(root / "config.yaml")
+    for title, want in [("AMD Ryzen 7 5800X3D 8-core Desktop Processor", "Ryzen 7 5800X3D"),
+                        ("Corsair Vengeance LPX DDR4 RAM 32GB (2x16GB) 3200MHz", "DDR4 32GB kit"),
+                        ("Skytech Gaming Desktop Ryzen 7 7800X3D RTX 5070 32GB DDR5 5600MHz", "Prebuilt PC: RTX 5070")]:
+        assert resolve_part(L(title), c.parts, c.settings).name == want
 
 
 def test_prebuilt_prices_never_pollute_gpu_prices(tmp_path, root, monkeypatch):

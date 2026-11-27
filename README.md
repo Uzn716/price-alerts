@@ -192,6 +192,15 @@ PCs quiet, since nearly every 5090 PC costs less than the overpriced card alone.
 AM4 Ryzen are skipped entirely. They don't alert and don't count toward normal
 prices. This only affects prebuilts; AM4 CPUs bought on their own still alert.
 
+**Pro esports peripherals** (45 entries, picked from CS2 and VALORANT pro usage
+data in November 2026): mice like the Logitech Superlight 2, Superstrike, Razer
+Viper and DeathAdder, plus ZOWIE, VAXEE, Pulsar, Lamzu; Wooting, Razer Huntsman
+and Logitech keyboards; ARTISAN, ZOWIE, QcK Heavy and Saturn Pro mousepads;
+HyperX, Logitech and Razer headsets; and ZOWIE, ASUS and Alienware esports
+monitors. Peripherals go on sale often, so they need **30%** below normal. They
+use their own filter (`peripheral_exclude`) so grip tape, skates, keycaps and
+replacement ear pads don't count as the real thing.
+
 Each listing alerts once. It alerts again only if the price drops another 5%,
 or after `realert_after_hours`.
 

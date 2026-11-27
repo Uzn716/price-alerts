@@ -37,7 +37,7 @@ def test_search_feeds_refresh_every_15_minutes(root):
     c = load_config(root / "config.yaml")
     hot = [f for f in c.slickdeals.feeds if not f.get("every_minutes")]
     searches = [f for f in c.slickdeals.feeds if f.get("every_minutes") == 15]
-    assert len(hot) == 2 and len(searches) == 17
+    assert len(hot) == 2 and len(searches) == 23
     state = State()
 
     def fetched_at(when):
@@ -45,7 +45,7 @@ def test_search_feeds_refresh_every_15_minutes(root):
         SlickdealsSource(c, state, s, when).fetch()
         return len(s.calls)
 
-    assert fetched_at(NOW) == 19                          # first run: everything
+    assert fetched_at(NOW) == 25                          # first run: everything
     assert fetched_at(NOW + timedelta(minutes=5)) == 2    # only the 2 general feeds
     assert fetched_at(NOW + timedelta(minutes=10)) == 2
-    assert fetched_at(NOW + timedelta(minutes=15)) == 19  # searches due again
+    assert fetched_at(NOW + timedelta(minutes=15)) == 25  # searches due again

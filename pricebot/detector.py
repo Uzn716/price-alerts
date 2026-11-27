@@ -32,14 +32,18 @@ def resolve_part(listing: Listing, parts: list[Part], settings: Settings) -> Par
     if listing.part_hint is not None:
         return listing.part_hint
     tokens = tokenize(listing.title)
-    if any_phrase_in(tokens, settings.exclude):
-        return None
     # Prebuilt PCs only match prebuilt entries, so a "$1,300 gaming desktop with an
     # RTX 5070" never counts as an RTX 5070 graphics card.
     prebuilt = settings.title_is_prebuilt(tokens)
     if prebuilt and any_phrase_in(tokens, settings.prebuilt_exclude):
         return None  # e.g. DDR4 / AM4 prebuilts you don't want at all
-    return match_part(listing.title, parts, prebuilt=prebuilt)
+    part = match_part(listing.title, parts, prebuilt=prebuilt)
+    if part is None:
+        return None
+    # Peripherals have their own exclude list: their titles often say "for PC/Laptop",
+    # which the main list would wrongly reject; instead it filters grip tape, skates...
+    excludes = settings.peripheral_exclude if part.peripheral else settings.exclude
+    return None if any_phrase_in(tokens, excludes) else part
 
 
 def price_floor(part: Part | None, settings: Settings) -> float:

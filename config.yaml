@@ -88,35 +88,36 @@ settings:
     - cyberpowerpc
     - ibuypower
     - skytech
-    - origin pc
-    - nzxt player
-    - alienware aurora
-    - alienware area 51
-    - omen 35l
-    - omen 40l
-    - omen 45l
-    - legion tower
-    - legion t5
-    - legion t7
+    - origin-pc
+    - nzxt-player
+    - alienware-aurora
+    - alienware-area-51
+    - omen-35l
+    - omen-40l
+    - omen-45l
+    - legion-tower
+    - legion-t5
+    - legion-t7
     - maingear
     - velztorm
     - yeyian
-    - msi aegis
-    - msi codex
-    - msi infinite
-    - predator orion
-    - thermaltake lcgs
-  # ...and titles with these phrases too, unless they read like a single part
+    - msi-aegis
+    - msi-codex
+    - msi-infinite
+    - predator-orion
+    - thermaltake-lcgs
+  # ...and titles with these phrases too ("-" = words right next to each other),
+  # unless they read like a single part
   # (component_words), e.g. "DDR5 Desktop Memory for Gaming PC" stays RAM.
   prebuilt_words:
-    - gaming desktop
-    - gaming pc
-    - desktop pc
-    - gaming computer
+    - gaming-desktop
+    - gaming-pc
+    - desktop-pc
+    - gaming-computer
     - prebuilt
-    - pre built
-    - gaming tower
-    - tower pc
+    - pre-built
+    - gaming-tower
+    - tower-pc
   component_words:
     - graphics card
     - video card
@@ -165,6 +166,41 @@ settings:
     - 5800xt
     - 5900x
     - 5950x
+
+  # ── Peripherals ──
+  # Mice, keyboards, mousepads, headsets and esports monitors skip the main
+  # exclude list (their titles often say "for PC/Laptop") and use this one,
+  # which filters out accessories sold for them.
+  peripheral_exclude:
+    - grip tape
+    - grips
+    - skates
+    - mouse feet
+    - glides
+    - keycap
+    - keycaps
+    - wrist rest
+    - case for
+    - carrying case
+    - protective case
+    - cover
+    - sleeve
+    - ear pads
+    - earpads
+    - ear cushions
+    - replacement
+    - dongle
+    - receiver only
+    - compatible-with
+    - for-logitech
+    - for-razer
+    - for-wooting
+    - for-zowie
+    - for-hyperx
+    - renewed
+    - refurbished
+    - open box
+    - pre owned
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Your watchlist. For each part:
@@ -560,6 +596,246 @@ parts:
     min_price: 45
     min_drop_percent: 45   # broad group: models vary a lot in price
 
+  # ── Pro esports mice (CS2 / VALORANT) ──
+  # Pro gear from CS2/VALORANT usage data (Nov 2026). Peripherals go on sale
+  # a lot, so these need 30% below their learned normal price.
+  - name: "Logitech G Pro X Superlight 2"
+    match: ["superlight-2"]
+    exclude: ["superlight-2c", "dex", "superstrike"]
+    peripheral: true
+    min_price: 60
+    min_drop_percent: 30
+  - name: "Logitech G Pro X Superlight 2 DEX"
+    match: ["superlight-2-dex"]
+    peripheral: true
+    min_price: 60
+    min_drop_percent: 30
+  - name: "Logitech G Pro X Superlight 2c"
+    match: ["superlight-2c"]
+    peripheral: true
+    min_price: 60
+    min_drop_percent: 30
+  - name: "Logitech G Pro X Superlight (gen 1)"
+    match: ["pro-x-superlight"]
+    exclude: ["superlight-2", "superstrike"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "Logitech G Pro X2 Superstrike"
+    match: ["pro-x2-superstrike", "pro-x-2-superstrike"]
+    peripheral: true
+    min_price: 80
+    min_drop_percent: 30
+  - name: "Logitech G Pro X3 Superstrike"
+    match: ["pro-x3-superstrike", "pro-x-3-superstrike"]
+    peripheral: true
+    min_price: 90
+    min_drop_percent: 30
+  - name: "Razer Viper V4 Pro"
+    match: ["viper-v4-pro"]
+    peripheral: true
+    min_price: 70
+    min_drop_percent: 30
+  - name: "Razer Viper V3 Pro"
+    match: ["viper-v3-pro"]
+    peripheral: true
+    min_price: 70
+    min_drop_percent: 30
+  - name: "Razer DeathAdder V4 Pro"
+    match: ["deathadder-v4-pro"]
+    peripheral: true
+    min_price: 70
+    min_drop_percent: 30
+  - name: "Razer DeathAdder V3 Pro"
+    match: ["deathadder-v3-pro"]
+    peripheral: true
+    min_price: 60
+    min_drop_percent: 30
+  - name: "ZOWIE EC mouse"
+    match: ["zowie ec1", "zowie ec2", "zowie ec3"]
+    peripheral: true
+    min_price: 40
+    min_drop_percent: 30
+  - name: "ZOWIE S mouse"
+    match: ["zowie s1", "zowie s2"]
+    peripheral: true
+    min_price: 40
+    min_drop_percent: 30
+  - name: "ZOWIE FK mouse"
+    match: ["zowie fk1", "zowie fk2"]
+    peripheral: true
+    min_price: 40
+    min_drop_percent: 30
+  - name: "ZOWIE U2"
+    match: ["zowie u2"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "VAXEE mouse"
+    match: ["vaxee xe", "vaxee outset", "vaxee np", "vaxee zygen"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "Pulsar mouse"
+    match: ["pulsar x2", "pulsar xlite", "pulsar zywoo", "pulsar tenz"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "Lamzu mouse"
+    match: ["lamzu maya", "lamzu thorn", "lamzu atlantis", "lamzu inca"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "Finalmouse"
+    match: ["finalmouse"]
+    peripheral: true
+    min_price: 60
+    min_drop_percent: 30
+  - name: "WLMOUSE"
+    match: ["wlmouse"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+
+  # ── Pro esports keyboards ──
+  - name: "Wooting 60HE"
+    match: ["wooting 60he"]
+    peripheral: true
+    min_price: 100
+    min_drop_percent: 30
+  - name: "Wooting 80HE"
+    match: ["wooting 80he"]
+    peripheral: true
+    min_price: 120
+    min_drop_percent: 30
+  - name: "Razer Huntsman V3 Pro"
+    match: ["huntsman-v3-pro"]
+    peripheral: true
+    min_price: 90
+    min_drop_percent: 30
+  - name: "Logitech G Pro X TKL Rapid"
+    match: ["pro-x-tkl-rapid"]
+    peripheral: true
+    min_price: 90
+    min_drop_percent: 30
+  - name: "SteelSeries Apex Pro"
+    match: ["steelseries apex-pro"]
+    peripheral: true
+    min_price: 90
+    min_drop_percent: 30
+
+  # ── Pro esports mousepads ──
+  - name: "ARTISAN mousepad"
+    match: ["artisan zero", "artisan hien", "artisan raiden", "artisan hayate", "artisan ninja-fx"]
+    peripheral: true
+    min_price: 25
+    min_drop_percent: 30
+  - name: "ZOWIE G-SR / G-TR mousepad"
+    match: ["zowie g-sr", "zowie g-tr"]
+    peripheral: true
+    min_price: 20
+    min_drop_percent: 30
+  - name: "SteelSeries QcK Heavy"
+    match: ["qck heavy"]
+    peripheral: true
+    min_price: 15
+    min_drop_percent: 30
+  - name: "Razer Gigantus V2"
+    match: ["gigantus-v2"]
+    peripheral: true
+    min_price: 15
+    min_drop_percent: 30
+  - name: "Saturn Pro mousepad"
+    match: ["saturn-pro"]
+    peripheral: true
+    min_price: 25
+    min_drop_percent: 30
+  - name: "Logitech G640"
+    match: ["logitech g640"]
+    peripheral: true
+    min_price: 15
+    min_drop_percent: 30
+
+  # ── Pro esports headsets ──
+  - name: "HyperX Cloud II"
+    match: ["hyperx cloud-ii"]
+    peripheral: true
+    min_price: 40
+    min_drop_percent: 30
+  - name: "HyperX Cloud III"
+    match: ["hyperx cloud-iii"]
+    peripheral: true
+    min_price: 50
+    min_drop_percent: 30
+  - name: "Logitech G Pro X 2 Lightspeed"
+    match: ["pro-x-2-lightspeed"]
+    peripheral: true
+    min_price: 100
+    min_drop_percent: 30
+  - name: "Razer BlackShark V3 Pro"
+    match: ["blackshark-v3-pro"]
+    peripheral: true
+    min_price: 100
+    min_drop_percent: 30
+  - name: "Razer BlackShark V2 Pro"
+    match: ["blackshark-v2-pro"]
+    peripheral: true
+    min_price: 80
+    min_drop_percent: 30
+  - name: "Razer BlackShark V2"
+    match: ["blackshark-v2"]
+    exclude: ["pro"]
+    peripheral: true
+    min_price: 40
+    min_drop_percent: 30
+  - name: "SteelSeries Arctis Nova Pro"
+    match: ["arctis-nova-pro"]
+    peripheral: true
+    min_price: 120
+    min_drop_percent: 30
+
+  # ── Pro esports monitors ──
+  - name: "ZOWIE XL2586X+ (600Hz)"
+    match: ["xl2586x"]
+    peripheral: true
+    min_price: 400
+    min_drop_percent: 30
+  - name: "ZOWIE XL2566X+ (400Hz)"
+    match: ["xl2566x"]
+    peripheral: true
+    min_price: 300
+    min_drop_percent: 30
+  - name: "ZOWIE XL2566K (360Hz)"
+    match: ["xl2566k"]
+    peripheral: true
+    min_price: 200
+    min_drop_percent: 30
+  - name: "ZOWIE XL2546K (240Hz)"
+    match: ["xl2546k"]
+    peripheral: true
+    min_price: 150
+    min_drop_percent: 30
+  - name: "ZOWIE XL2546X"
+    match: ["xl2546x"]
+    peripheral: true
+    min_price: 150
+    min_drop_percent: 30
+  - name: "ASUS ROG Swift Pro PG248QP (540Hz)"
+    match: ["pg248qp"]
+    peripheral: true
+    min_price: 300
+    min_drop_percent: 30
+  - name: "ASUS ROG Swift PG27AQN (360Hz)"
+    match: ["pg27aqn"]
+    peripheral: true
+    min_price: 300
+    min_drop_percent: 30
+  - name: "Alienware AW2524H (500Hz)"
+    match: ["aw2524h"]
+    peripheral: true
+    min_price: 200
+    min_drop_percent: 30
+
   # ── Monitors ──
   - name: OLED gaming monitor
     match: ["oled gaming monitor", "qd oled monitor", "oled monitor"]
@@ -774,6 +1050,24 @@ slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No ke
       every_minutes: 15
     - name: Search Gaming PC
       url: https://slickdeals.net/newsearch.php?q=gaming+pc&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming Mouse
+      url: https://slickdeals.net/newsearch.php?q=gaming+mouse&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming Keyboard
+      url: https://slickdeals.net/newsearch.php?q=gaming+keyboard&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming Headset
+      url: https://slickdeals.net/newsearch.php?q=gaming+headset&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Mouse Pad
+      url: https://slickdeals.net/newsearch.php?q=mouse+pad&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Superlight
+      url: https://slickdeals.net/newsearch.php?q=superlight&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Zowie
+      url: https://slickdeals.net/newsearch.php?q=zowie&searcharea=deals&searchin=first&rss=1
       every_minutes: 15
     # Add  alert_all_matches: true  under a feed to hear about EVERY new post
     # matching one of your parts, not just 20%+ deals.

@@ -51,6 +51,7 @@ class Settings:
     prebuilt_partout_ratio: float = 0  # 0 = off
     prebuilt_partout_min_drop: float = 10
     prebuilt_exclude: list[str] = field(default_factory=list)
+    peripheral_exclude: list[str] = field(default_factory=list)
 
     def title_is_prebuilt(self, tokens: list[str]) -> bool:
         from .matching import is_prebuilt
@@ -140,6 +141,7 @@ def _parse_part(raw: Any, index: int) -> Part:
         amazon=[parse_asin(a) for a in _str_list(raw.get("amazon"), f"{where} amazon")],
         prebuilt=bool(raw.get("prebuilt", False)),
         gpu=str(raw["gpu"]) if raw.get("gpu") else None,
+        peripheral=bool(raw.get("peripheral", False)),
     )
 
 
@@ -181,6 +183,7 @@ def load_config(path: str | Path) -> Config:
         prebuilt_partout_min_drop=(_num(s.get("prebuilt_partout_min_drop"), "prebuilt_partout_min_drop")
                                    if s.get("prebuilt_partout_min_drop") is not None else 10),
         prebuilt_exclude=_str_list(s.get("prebuilt_exclude"), "prebuilt_exclude"),
+        peripheral_exclude=_str_list(s.get("peripheral_exclude"), "peripheral_exclude"),
     )
 
     parts = [_parse_part(p, i) for i, p in enumerate(raw.get("parts") or [])]

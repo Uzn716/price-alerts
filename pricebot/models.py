@@ -17,6 +17,7 @@ class Part:
     starting_price: float | None = None  # normal price to use until the bot has learned one
     prebuilt: bool = False  # this entry is for prebuilt PCs, not a loose component
     gpu: str | None = None  # for prebuilts: name of the GPU entry inside (for part-out value)
+    peripheral: bool = False  # mouse/keyboard/etc.: uses peripheral_exclude instead of exclude
     amazon: list[str] = field(default_factory=list)  # ASINs to watch directly via Keepa
 
 

@@ -123,7 +123,8 @@ class EbaySource:
             return []
         searches: dict[str, Part] = {}
         for part in self.config.parts:
-            searches.setdefault(part.match[0], part)
+            if not part.prebuilt:  # used/refurb prebuilts on eBay are too risky to compare
+                searches.setdefault(part.match[0], part)
         if not searches:
             return []
 
@@ -151,7 +152,7 @@ class EbaySource:
             if not title or price is None or (item.get("price") or {}).get("currency", "USD") != "USD":
                 continue
             tokens = tokenize(title)
-            if match_part(title, [part]) is None:
+            if match_part(title, [part]) is None or self.config.settings.title_is_prebuilt(tokens):
                 continue
             if any_phrase_in(tokens, EBAY_EXCLUDES) or any_phrase_in(tokens, self.config.settings.exclude):
                 continue

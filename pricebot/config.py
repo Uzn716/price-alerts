@@ -45,6 +45,14 @@ class Settings:
     timezone: str = "America/New_York"
     general_keywords: list[str] = field(default_factory=list)
     exclude: list[str] = field(default_factory=list)
+    prebuilt_brands: list[str] = field(default_factory=list)
+    prebuilt_words: list[str] = field(default_factory=list)
+    component_words: list[str] = field(default_factory=list)
+    prebuilt_partout_ratio: float = 0  # 0 = off
+
+    def title_is_prebuilt(self, tokens: list[str]) -> bool:
+        from .matching import is_prebuilt
+        return is_prebuilt(tokens, self.prebuilt_brands, self.prebuilt_words, self.component_words)
 
 
 @dataclass
@@ -128,6 +136,8 @@ def _parse_part(raw: Any, index: int) -> Part:
         min_price=_num(raw.get("min_price"), f"{where} min_price"),
         starting_price=_num(raw.get("starting_price"), f"{where} starting_price"),
         amazon=[parse_asin(a) for a in _str_list(raw.get("amazon"), f"{where} amazon")],
+        prebuilt=bool(raw.get("prebuilt", False)),
+        gpu=str(raw["gpu"]) if raw.get("gpu") else None,
     )
 
 
@@ -162,6 +172,10 @@ def load_config(path: str | Path) -> Config:
         timezone=str(s.get("timezone") or "America/New_York"),
         general_keywords=_str_list(s.get("general_keywords"), "general_keywords"),
         exclude=_str_list(s.get("exclude"), "exclude"),
+        prebuilt_brands=_str_list(s.get("prebuilt_brands"), "prebuilt_brands"),
+        prebuilt_words=_str_list(s.get("prebuilt_words"), "prebuilt_words"),
+        component_words=_str_list(s.get("component_words"), "component_words"),
+        prebuilt_partout_ratio=_num(s.get("prebuilt_partout_ratio"), "prebuilt_partout_ratio") or 0,
     )
 
     parts = [_parse_part(p, i) for i, p in enumerate(raw.get("parts") or [])]

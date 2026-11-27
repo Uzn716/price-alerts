@@ -82,6 +82,57 @@ settings:
     - riser
     - replacement fan
 
+  # ── Prebuilt PCs ──
+  # Titles with these brand names are always treated as a whole PC...
+  prebuilt_brands:
+    - cyberpowerpc
+    - ibuypower
+    - skytech
+    - origin pc
+    - nzxt player
+    - alienware aurora
+    - alienware area 51
+    - omen 35l
+    - omen 40l
+    - omen 45l
+    - legion tower
+    - legion t5
+    - legion t7
+    - maingear
+    - velztorm
+    - yeyian
+    - msi aegis
+    - msi codex
+    - msi infinite
+    - predator orion
+    - thermaltake lcgs
+  # ...and titles with these phrases too, unless they read like a single part
+  # (component_words), e.g. "DDR5 Desktop Memory for Gaming PC" stays RAM.
+  prebuilt_words:
+    - gaming desktop
+    - gaming pc
+    - desktop pc
+    - gaming computer
+    - prebuilt
+    - pre built
+    - gaming tower
+    - tower pc
+  component_words:
+    - graphics card
+    - video card
+    - desktop memory
+    - memory kit
+    - desktop processor
+    - internal ssd
+    - internal solid state drive
+    - motherboard
+    - power supply
+    - cpu cooler
+  # Optional extra alert for prebuilts: set to e.g. 1.1 to ALSO alert when a whole
+  # PC costs no more than 1.1x the normal price of its graphics card alone
+  # (great for parting out). 0 = off; every prebuilt alert still shows this ratio.
+  prebuilt_partout_ratio: 0
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  Your watchlist. For each part:
 #    match:        words that must ALL appear in a product title (case doesn't
@@ -516,6 +567,91 @@ parts:
     min_price: 250
     min_drop_percent: 45   # broad group: models vary a lot in price
 
+  # ── Prebuilt gaming PCs (grouped by graphics card) ──
+  # Whole PCs vary a lot by CPU/RAM/storage, so these need 35% below their
+  # learned normal price. Each alert also shows what the GPU alone is worth.
+  - name: "Prebuilt PC: RTX 5090"
+    match: ["rtx 5090"]
+    prebuilt: true
+    gpu: RTX 5090
+    min_price: 2000
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 5080"
+    match: ["rtx 5080"]
+    prebuilt: true
+    gpu: RTX 5080
+    min_price: 1200
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 5070 Ti"
+    match: ["rtx 5070 ti"]
+    prebuilt: true
+    gpu: RTX 5070 Ti
+    min_price: 1000
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 5070"
+    match: ["rtx 5070"]
+    exclude: ["ti"]
+    prebuilt: true
+    gpu: RTX 5070
+    min_price: 800
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 5060 Ti"
+    match: ["rtx 5060 ti"]
+    prebuilt: true
+    gpu: RTX 5060 Ti
+    min_price: 650
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 5060"
+    match: ["rtx 5060"]
+    exclude: ["ti"]
+    prebuilt: true
+    gpu: RTX 5060
+    min_price: 550
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RX 9070 XT"
+    match: ["rx 9070 xt", "radeon 9070 xt"]
+    prebuilt: true
+    gpu: RX 9070 XT
+    min_price: 900
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RX 9070"
+    match: ["rx 9070", "radeon 9070"]
+    exclude: ["xt"]
+    prebuilt: true
+    gpu: RX 9070
+    min_price: 800
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RX 9060 XT"
+    match: ["rx 9060 xt", "radeon 9060 xt"]
+    prebuilt: true
+    gpu: RX 9060 XT
+    min_price: 600
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 4090"
+    match: ["rtx 4090"]
+    prebuilt: true
+    gpu: RTX 4090
+    min_price: 1800
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 4080 / 4080 Super"
+    match: ["rtx 4080"]
+    prebuilt: true
+    gpu: RTX 4080
+    min_price: 1200
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 4070 family"
+    match: ["rtx 4070"]
+    prebuilt: true
+    gpu: RTX 4070
+    min_price: 800
+    min_drop_percent: 35
+  - name: "Prebuilt PC: RTX 4060 / 4060 Ti"
+    match: ["rtx 4060"]
+    prebuilt: true
+    gpu: RTX 4060
+    min_price: 550
+    min_drop_percent: 35
+
   # Example of watching specific Amazon listings directly (needs Keepa).
   # Paste the product link from your browser:
   # - name: My exact RTX 5080
@@ -599,6 +735,12 @@ slickdeals:       # Everyone else (Newegg, Micro Center, B&H, Walmart...). No ke
       every_minutes: 15
     - name: Search Handheld
       url: https://slickdeals.net/newsearch.php?q=handheld&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming Desktop
+      url: https://slickdeals.net/newsearch.php?q=gaming+desktop&searcharea=deals&searchin=first&rss=1
+      every_minutes: 15
+    - name: Search Gaming PC
+      url: https://slickdeals.net/newsearch.php?q=gaming+pc&searcharea=deals&searchin=first&rss=1
       every_minutes: 15
     # Add  alert_all_matches: true  under a feed to hear about EVERY new post
     # matching one of your parts, not just 20%+ deals.

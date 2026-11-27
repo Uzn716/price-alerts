@@ -31,9 +31,12 @@ def resolve_part(listing: Listing, parts: list[Part], settings: Settings) -> Par
     """Which tracked part this listing is (None if excluded or not tracked)."""
     if listing.part_hint is not None:
         return listing.part_hint
-    if any_phrase_in(tokenize(listing.title), settings.exclude):
+    tokens = tokenize(listing.title)
+    if any_phrase_in(tokens, settings.exclude):
         return None
-    return match_part(listing.title, parts)
+    # Prebuilt PCs only match prebuilt entries, so a "$1,300 gaming desktop with an
+    # RTX 5070" never counts as an RTX 5070 graphics card.
+    return match_part(listing.title, parts, prebuilt=settings.title_is_prebuilt(tokens))
 
 
 def price_floor(part: Part | None, settings: Settings) -> float:
@@ -47,7 +50,9 @@ def evaluate(
     learned_typical: float | None = None,
     part=UNSET,
     learned_days: int = 0,
+    gpu_normal: float | None = None,
 ) -> Alert | None:
+    """gpu_normal: for prebuilt PCs, the normal price of the graphics card inside."""
     tokens = tokenize(listing.title)
     if part is UNSET:
         part = resolve_part(listing, parts, settings)
@@ -93,6 +98,15 @@ def evaluate(
     if part and part.alert_below is not None and price <= part.alert_below:
         reasons.append(f"Under your ${part.alert_below:,.0f} target for {part.name}")
 
+    notes: list[str] = []
+    if part and part.prebuilt and gpu_normal:
+        ratio = price / gpu_normal
+        gpu_name = part.gpu or "graphics card"
+        notes.append(f"🔧 The {gpu_name} alone is normally ~${gpu_normal:,.0f}: this whole PC costs "
+                     f"{ratio:.2f}× that")
+        if settings.prebuilt_partout_ratio > 0 and ratio <= settings.prebuilt_partout_ratio:
+            reasons.append(f"Costs only {ratio:.2f}× the {gpu_name} inside it (good part-out value)")
+
     if listing.alert_all_matches and part and not reasons:
         reasons.append(f"New deal post for {part.name}")
 
@@ -100,4 +114,4 @@ def evaluate(
         return None
     if listing.error_words:
         reasons.append("The post also calls it a possible price error")
-    return Alert(listing=listing, part=part, reasons=reasons, drop_percent=drop, basis=basis)
+    return Alert(listing=listing, part=part, reasons=reasons, drop_percent=drop, basis=basis, notes=notes)

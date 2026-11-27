@@ -174,6 +174,15 @@ If you want, you can give a part an `alert_below` price to also get alerts
 under that price. None are set by default. A post that calls itself a
 "price error" doesn't alert by itself; it still has to be 20% below normal.
 
+**Prebuilt PCs** are recognized by brand (CyberPowerPC, iBuyPower, Skytech,
+Origin PC, Alienware, HP Omen, Lenovo Legion and others) or phrases like
+"gaming desktop". They're grouped by their graphics card ("Prebuilt PC: RTX
+5080" and so on) and kept separate from loose components, so a $1,300 gaming
+desktop never counts as a $1,300 graphics card. Because whole PCs vary a lot,
+they need 35% below normal. Every prebuilt alert also shows what its graphics
+card alone is worth, and `prebuilt_partout_ratio` can add alerts for PCs that
+cost barely more than their GPU.
+
 Each listing alerts once. It alerts again only if the price drops another 5%,
 or after `realert_after_hours`.
 

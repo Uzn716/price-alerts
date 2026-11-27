@@ -15,6 +15,8 @@ class Part:
     min_drop_percent: float | None = None
     min_price: float | None = None
     starting_price: float | None = None  # normal price to use until the bot has learned one
+    prebuilt: bool = False  # this entry is for prebuilt PCs, not a loose component
+    gpu: str | None = None  # for prebuilts: name of the GPU entry inside (for part-out value)
     amazon: list[str] = field(default_factory=list)  # ASINs to watch directly via Keepa
 
 
@@ -49,3 +51,4 @@ class Alert:
     reasons: list[str]
     drop_percent: float | None
     basis: str = ""  # where the "normal price" came from, shown in the alert
+    notes: list[str] = field(default_factory=list)  # extra lines for the alert (e.g. part-out value)

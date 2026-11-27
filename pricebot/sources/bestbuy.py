@@ -15,7 +15,7 @@ import requests
 
 from ..config import Config
 from ..http import TIMEOUT, SourceError
-from ..matching import match_part
+from ..matching import match_part, tokenize
 from ..models import Listing
 from ..state import State
 
@@ -105,7 +105,8 @@ class BestBuySource:
         if condition != "new" and not self.config.bestbuy.include_open_box:
             return None
         # Only keep history for things we actually track, so the state file stays small.
-        if match_part(name, self.config.parts) is None:
+        prebuilt = self.config.settings.title_is_prebuilt(tokenize(name))
+        if match_part(name, self.config.parts, prebuilt=prebuilt) is None:
             return None
 
         key = f"{self.name}:{sku}"

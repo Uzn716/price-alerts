@@ -30,6 +30,7 @@ def resale_lines(alert: Alert, fee_percent: float) -> list[str]:
         lines.append(f"Resold at normal price minus ~{fee_percent:g}% fees: ≈ **${profit:,.0f}** {word}")
     if alert.basis:
         lines.append(f"Normal price based on: {alert.basis}")
+    lines.extend(alert.notes)
     return lines
 
 

@@ -37,10 +37,22 @@ def any_phrase_in(tokens: list[str], phrases: list[str]) -> bool:
     return any(phrase_in(tokens, p) for p in phrases)
 
 
-def match_part(title: str, parts: list[Part]) -> Part | None:
-    """Return the first part whose match phrases fit the title and excludes don't."""
+def is_prebuilt(tokens: list[str], brands: list[str], words: list[str], component_words: list[str]) -> bool:
+    """A whole PC rather than a single part? Brand names (CyberPowerPC, iBuyPower...)
+    always count; generic phrases ("gaming desktop") count unless the title also
+    reads like a component ("graphics card", "desktop memory"...)."""
+    if any_phrase_in(tokens, brands):
+        return True
+    return any_phrase_in(tokens, words) and not any_phrase_in(tokens, component_words)
+
+
+def match_part(title: str, parts: list[Part], prebuilt: bool | None = None) -> Part | None:
+    """Return the first part whose match phrases fit the title and excludes don't.
+    With prebuilt=True/False, only prebuilt-PC entries / only component entries are considered."""
     tokens = tokenize(title)
     for part in parts:
+        if prebuilt is not None and part.prebuilt != prebuilt:
+            continue
         if any_phrase_in(tokens, part.match) and not any_phrase_in(tokens, part.exclude):
             return part
     return None

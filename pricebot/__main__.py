@@ -34,6 +34,7 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
 
     session = session or make_session()
     state = State.load(state_path)
+    _migrate(state, config)
     discord = None if dry_run else Discord(config.discord_webhook_url, config.settings.mention, session,
                                              config.settings.resale_fee_percent)
 
@@ -80,7 +81,9 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
             )
             if not listing.learn_only:
                 days = state.days_of_data(low_key, now, st.learn_window_days) if part else 0
-                alert = evaluate(listing, config.parts, st, learned_typical=typical, part=part, learned_days=days)
+                gpu_normal = _gpu_normal(part, config, state, now) if part and part.prebuilt else None
+                alert = evaluate(listing, config.parts, st, learned_typical=typical, part=part,
+                                 learned_days=days, gpu_normal=gpu_normal)
                 if (
                     alert
                     and listing.key not in alerted_keys
@@ -124,6 +127,38 @@ def run(config_path: str, state_path: str, dry_run: bool = False, now: datetime 
         state.mark_alerted(alert.listing.key, alert.listing.price, now)
     state.save(state_path, now)
     return 0
+
+
+def _migrate(state: State, config) -> None:
+    """One-time fixes to saved data."""
+    done = state.meta.setdefault("migrations", [])
+    if "split-prebuilt-prices" not in done:
+        # Before prebuilt PCs were recognized, a "gaming desktop with an RTX 5070" was
+        # recorded as an RTX 5070 price. Drop daily prices that are far above a
+        # component's own range (> 1.5x its lowest known price).
+        removed = 0
+        for part in config.parts:
+            days = state.history.get(f"prices:{part.name}")
+            if part.prebuilt or not days:
+                continue
+            base = min([*days.values(), *([part.starting_price] if part.starting_price else [])])
+            for day, price in list(days.items()):
+                if price > base * 1.5:
+                    del days[day]
+                    removed += 1
+        done.append("split-prebuilt-prices")
+        if removed:
+            print(f"  cleanup: removed {removed} prebuilt-PC price(s) from component price history")
+
+
+def _gpu_normal(part, config, state: State, now: datetime) -> float | None:
+    """Normal price of the graphics card inside a prebuilt (learned, else starting price)."""
+    gpu = next((p for p in config.parts if p.name == part.gpu and not p.prebuilt), None)
+    if not gpu:
+        return None
+    st = config.settings
+    learned = state.typical_price(f"prices:{gpu.name}", now, min_days=st.learn_min_days, days=st.learn_window_days)
+    return learned or gpu.starting_price
 
 
 def _local_now(config, now: datetime) -> datetime:
